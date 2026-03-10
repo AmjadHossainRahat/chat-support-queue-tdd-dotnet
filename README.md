@@ -32,3 +32,8 @@ Unit and integration tests following the TDD approach.
 ## Current focus
 
 At first I would like to document the problem before I start building the solution. I want the first coding step to happen on top of a clear understanding and well defined asumption.
+
+## Additional Documentations
+
+- `docs/01-task-analysis.md`
+- `docs/02-assumptions.md`

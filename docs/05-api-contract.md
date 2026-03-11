@@ -1,4 +1,4 @@
-# 05 — API Contract and Workflow Diagrams
+# 05 - API Contract and Workflow Diagrams
 
 ## Intent
 

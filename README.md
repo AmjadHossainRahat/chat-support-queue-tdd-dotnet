@@ -40,3 +40,4 @@ At first I would like to document the problem before I start building the soluti
 - `docs/03-business-rules.md`
 - `docs/04-architecture.md`
 - `docs/adr/ADR-001-use-latest-dotnet-lts.md`
+- `docs/adr/ADR-002-domain-first-tdd.md`

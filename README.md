@@ -22,6 +22,9 @@ Design analysis, assumptions, architecture notes, and API contract.
 `docs/adr/`  
 Architecture Decision Records (ADR).
 
+`docs/diagrams`
+Different Diagrams
+
 `src/`  
 Application source code (added after documentation phase).
 
@@ -41,3 +44,5 @@ At first I would like to document the problem before I start building the soluti
 - `docs/04-architecture.md`
 - `docs/adr/ADR-001-use-latest-dotnet-lts.md`
 - `docs/adr/ADR-002-domain-first-tdd.md`
+- `docs/adr/ADR-003-use-hosted-services-for-background-processing.md`
+- `docs/adr/ADR-004-use-polling-for-session-liveness.md`

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SupportChat.API/SupportChat.API.csproj" />
+    <Project Path="src/SupportChat.Application/SupportChat.Application.csproj" Id="5b947151-2e4b-4131-a755-72b867eec340" />
+    <Project Path="src/SupportChat.Domain/SupportChat.Domain.csproj" Id="b4832b6c-ca47-45eb-a9b4-f005066fab4f" />
+    <Project Path="src/SupportChat.Infrastructure/SupportChat.Infrastructure.csproj" Id="8d6b5008-a763-46d2-bb87-f4297ff1ecbd" />
+    <Project Path="src/SupportChat.Worker/SupportChat.Worker.csproj" Id="03a56e16-c9b7-420c-8a5a-8732cacb09c3" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SupportChat.IntegrationTests/SupportChat.IntegrationTests.csproj" Id="f2b15a45-0088-4664-884a-afc00ff49e8f" />
+    <Project Path="tests/SupportChat.UnitTests/SupportChat.UnitTests.csproj" Id="977c2bdb-f0cd-4b0f-953c-6e2c329fb592" />
+  </Folder>
+</Solution>

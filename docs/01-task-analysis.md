@@ -37,3 +37,5 @@ Assignment is not random. It depends on:
 
 ### Capacity model
 The queue size is tied to team capacity, and team capacity is tied to agent seniority. So capacity cannot be hardcoded as one flat number.
+
+![ClientRequest](./diagrams/ClientRequest.png)

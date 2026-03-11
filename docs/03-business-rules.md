@@ -89,6 +89,8 @@ Assignment should prefer lower seniority first so that more senior people remain
 ### Rule 19
 Within the same seniority band, allocation should stay fair rather than repeatedly loading the same person.
 
+![AssignmentRule](./diagrams/AssignmentRule.png)
+
 ## What these rules mean for implementation
 
 The big takeaway for me is that the heart of the system is policy evaluation. HTTP endpoints and background workers are important, but they are not where the real difficulty lives.

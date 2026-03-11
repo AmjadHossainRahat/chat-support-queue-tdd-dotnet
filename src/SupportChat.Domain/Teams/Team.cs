@@ -4,6 +4,8 @@ namespace SupportChat.Domain.Teams;
 
 public class Team
 {
+    private const double QueueLimitMultiplier = 1.5;
+
     public Guid Id { get; }
     public string Name { get; }
     public IReadOnlyCollection<Agent> Agents { get; }
@@ -15,13 +17,13 @@ public class Team
         Agents = agents;
     }
 
-    public int GetQueueLimit()
-    {
-        throw new NotImplementedException();
-    }
-
     public int GetTotalCapacity()
     {
-        throw new NotImplementedException();
+        return Agents.Sum(agent => agent.GetMaxConcurrentChats());
+    }
+
+    public int GetQueueLimit()
+    {
+        return (int)Math.Floor(GetTotalCapacity() * QueueLimitMultiplier);
     }
 }

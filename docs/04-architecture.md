@@ -81,6 +81,19 @@ The task has two things happening at the same time:
 
 That is exactly why I do not want the design to collapse into a controller-and-service blob. The same business rules will be touched from more than one direction.
 
+## Contract-facing workflows
+
+Now that the main API actions are drafted, the architecture is easier to picture through two core flows:
+
+### Intake flow
+Client request -> API -> application use case -> queue admission policy -> persistence -> response
+
+### Monitoring / assignment flow
+Background worker -> application use case -> policy evaluation -> persistence update
+
+This confirms the earlier direction: the policies should sit in the middle, with API and workers acting as delivery mechanisms around them.
+
+
 ## Trade-offs and Intentional Simplifications
 For the purpose of this exercise, a few decisions are intentionally simplified.
 

@@ -1,10 +1,9 @@
-﻿namespace SupportChat.Domain.Agents
+﻿namespace SupportChat.Domain.Agents;
+
+public enum Seniority
 {
-    public enum Seniority
-    {
-        Junior = 1,
-        Mid = 2,
-        Senior = 3,
-        TeamLead = 4
-    }
+    Junior = 1,
+    Mid = 2,
+    Senior = 3,
+    TeamLead = 4
 }

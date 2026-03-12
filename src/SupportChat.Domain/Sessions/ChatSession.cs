@@ -11,30 +11,36 @@ public class ChatSession
     {
         Id = id;
         CreatedAtUtc = createdAtUtc;
+        Status = SessionStatus.Queued;
     }
 
     public void RegisterPoll(DateTime polledAtUtc)
     {
-        throw new NotImplementedException();
+        if (polledAtUtc < CreatedAtUtc)
+        {
+            throw new ArgumentException("Poll time cannot be earlier than session creation time.");
+        }
+
+        LastPolledAtUtc = polledAtUtc;
     }
 
     public void MarkAssigned()
     {
-        throw new NotImplementedException();
+        Status = SessionStatus.Assigned;
     }
 
     public void MarkInactive()
     {
-        throw new NotImplementedException();
+        Status = SessionStatus.Inactive;
     }
 
     public void MarkRejected()
     {
-        throw new NotImplementedException();
+        Status = SessionStatus.Rejected;
     }
 
     public void MarkCompleted()
     {
-        throw new NotImplementedException();
+        Status = SessionStatus.Completed;
     }
 }

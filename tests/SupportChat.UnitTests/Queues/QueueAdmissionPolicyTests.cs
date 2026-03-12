@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using SupportChat.Domain.Agents;
+﻿using SupportChat.Domain.Agents;
 using SupportChat.Domain.Queues;
 using SupportChat.Domain.Teams;
 
@@ -7,19 +6,21 @@ namespace SupportChat.UnitTests.Queues;
 
 public class QueueAdmissionPolicyTests
 {
+    private static readonly OfficeHoursPolicy OfficeHours = new(new TimeOnly(9, 0), new TimeOnly(17, 0));
+
     [Test]
     public void Should_admit_to_main_queue_when_main_queue_has_capacity()
     {
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
-        var policy = new QueueAdmissionPolicy();
+        var policy = new QueueAdmissionPolicy(OfficeHours);
 
         var result = policy.Decide(
             mainTeam,
             currentMainQueueCount: 10,
             overflowTeam,
             currentOverflowQueueCount: 0,
-            isWithinOfficeHours: true);
+            currentTime: new TimeOnly(10, 0));
 
         Assert.That(result, Is.EqualTo(QueueAdmissionResult.MainQueue));
     }
@@ -29,14 +30,14 @@ public class QueueAdmissionPolicyTests
     {
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
-        var policy = new QueueAdmissionPolicy();
+        var policy = new QueueAdmissionPolicy(OfficeHours);
 
         var result = policy.Decide(
             mainTeam,
             currentMainQueueCount: mainTeam.GetQueueLimit(),
             overflowTeam,
             currentOverflowQueueCount: 10,
-            isWithinOfficeHours: true);
+            currentTime: new TimeOnly(11, 0));
 
         Assert.That(result, Is.EqualTo(QueueAdmissionResult.OverflowQueue));
     }
@@ -46,14 +47,14 @@ public class QueueAdmissionPolicyTests
     {
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
-        var policy = new QueueAdmissionPolicy();
+        var policy = new QueueAdmissionPolicy(OfficeHours);
 
         var result = policy.Decide(
             mainTeam,
             currentMainQueueCount: mainTeam.GetQueueLimit(),
             overflowTeam,
             currentOverflowQueueCount: 0,
-            isWithinOfficeHours: false);
+            currentTime: new TimeOnly(20, 0));
 
         Assert.That(result, Is.EqualTo(QueueAdmissionResult.Rejected));
     }
@@ -63,14 +64,14 @@ public class QueueAdmissionPolicyTests
     {
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
-        var policy = new QueueAdmissionPolicy();
+        var policy = new QueueAdmissionPolicy(OfficeHours);
 
         var result = policy.Decide(
             mainTeam,
             currentMainQueueCount: mainTeam.GetQueueLimit(),
             overflowTeam,
             currentOverflowQueueCount: overflowTeam.GetQueueLimit(),
-            isWithinOfficeHours: true);
+            currentTime: new TimeOnly(10, 0));
 
         Assert.That(result, Is.EqualTo(QueueAdmissionResult.Rejected));
     }
@@ -80,14 +81,14 @@ public class QueueAdmissionPolicyTests
     {
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
-        var policy = new QueueAdmissionPolicy();
+        var policy = new QueueAdmissionPolicy(OfficeHours);
 
         var result = policy.Decide(
             mainTeam,
             currentMainQueueCount: mainTeam.GetQueueLimit() - 1,
             overflowTeam,
             currentOverflowQueueCount: 0,
-            isWithinOfficeHours: true);
+            currentTime: new TimeOnly(16, 30));
 
         Assert.That(result, Is.EqualTo(QueueAdmissionResult.MainQueue));
     }
@@ -96,10 +97,10 @@ public class QueueAdmissionPolicyTests
     {
         var agents = new List<Agent>
         {
-            new(Guid.NewGuid(), Seniority.TeamLead), // 5
-            new(Guid.NewGuid(), Seniority.Mid),      // 6
-            new(Guid.NewGuid(), Seniority.Mid),      // 6
-            new(Guid.NewGuid(), Seniority.Junior)    // 4
+            new(Guid.NewGuid(), Seniority.TeamLead),
+            new(Guid.NewGuid(), Seniority.Mid),
+            new(Guid.NewGuid(), Seniority.Mid),
+            new(Guid.NewGuid(), Seniority.Junior)
         };
 
         return new Team(Guid.NewGuid(), "Team A", agents);

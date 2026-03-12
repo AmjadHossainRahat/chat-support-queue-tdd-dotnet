@@ -4,23 +4,28 @@ namespace SupportChat.Domain.Queues;
 
 public class QueueAdmissionPolicy
 {
+    private readonly OfficeHoursPolicy _officeHoursPolicy;
+
+    public QueueAdmissionPolicy(OfficeHoursPolicy officeHoursPolicy)
+    {
+        _officeHoursPolicy = officeHoursPolicy;
+    }
+
     public QueueAdmissionResult Decide(
         Team mainTeam,
         int currentMainQueueCount,
         Team overflowTeam,
         int currentOverflowQueueCount,
-        bool isWithinOfficeHours)
+        TimeOnly currentTime)
     {
         var mainQueueLimit = mainTeam.GetQueueLimit();
 
-        // Main queue has capacity
         if (currentMainQueueCount < mainQueueLimit)
         {
             return QueueAdmissionResult.MainQueue;
         }
 
-        // Main queue full
-        if (!isWithinOfficeHours)
+        if (!_officeHoursPolicy.IsWithinOfficeHours(currentTime))
         {
             return QueueAdmissionResult.Rejected;
         }

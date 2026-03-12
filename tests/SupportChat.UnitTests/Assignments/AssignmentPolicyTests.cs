@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using SupportChat.Domain.Agents;
+﻿using SupportChat.Domain.Agents;
 using SupportChat.Domain.Assignments;
 
 namespace SupportChat.UnitTests.Assignments;
@@ -86,5 +85,32 @@ public class AssignmentPolicyTests
         Assert.Throws<InvalidOperationException>(() =>
             policy.SelectNextAgent(new List<Agent>())
         );
+    }
+
+    [Test]
+    public void Should_skip_agent_who_is_already_at_capacity()
+    {
+        var fullJunior = new Agent(Guid.NewGuid(), Seniority.Junior, activeChatCount: 4);
+        var availableMid = new Agent(Guid.NewGuid(), Seniority.Mid, activeChatCount: 0);
+
+        var policy = new AssignmentPolicy();
+
+        var selected = policy.SelectNextAgent(new[] { fullJunior, availableMid });
+
+        Assert.That(selected, Is.EqualTo(availableMid));
+    }
+
+    [Test]
+    public void Should_throw_when_all_agents_are_at_capacity()
+    {
+        var junior = new Agent(Guid.NewGuid(), Seniority.Junior, activeChatCount: 4);
+        var mid = new Agent(Guid.NewGuid(), Seniority.Mid, activeChatCount: 6);
+        var senior = new Agent(Guid.NewGuid(), Seniority.Senior, activeChatCount: 8);
+        var teamLead = new Agent(Guid.NewGuid(), Seniority.TeamLead, activeChatCount: 5);
+
+        var policy = new AssignmentPolicy();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            policy.SelectNextAgent(new[] { junior, mid, senior, teamLead }));
     }
 }

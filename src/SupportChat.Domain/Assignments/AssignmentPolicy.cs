@@ -6,19 +6,21 @@ public class AssignmentPolicy
 {
     public Agent SelectNextAgent(IEnumerable<Agent> agents)
     {
-        var availableAgents = agents.ToList();
+        var eligibleAgents = agents
+            .Where(a => a.CanTakeMoreChats())
+            .OrderBy(GetPriority)
+            .ThenBy(a => a.ActiveChatCount)
+            .ToList();
 
-        if (availableAgents.Count == 0)
+        if (eligibleAgents.Count == 0)
         {
-            throw new InvalidOperationException("No agents available for assignment.");
+            throw new InvalidOperationException("No eligible agents available for assignment.");
         }
 
-        return availableAgents
-            //.OrderBy(a => a.Seniority)    // do not rely on enum ordering for business rules
-            .OrderBy(GetPriority)
-            .First();
+        return eligibleAgents.First();
     }
 
+    // Explicit domain rule: cannot depend on Enum value.
     private static int GetPriority(Agent agent)
     {
         return agent.Seniority switch

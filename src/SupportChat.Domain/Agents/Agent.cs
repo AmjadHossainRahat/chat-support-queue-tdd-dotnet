@@ -7,11 +7,15 @@ public class Agent
 
     public Guid Id { get; }
     public Seniority Seniority { get; }
+    public int ActiveChatCount { get; private set; }
 
-    public Agent(Guid id, Seniority seniority)
+    public Agent(Guid id, Seniority seniority, int activeChatCount = 0)
     {
+        if (activeChatCount < 0) throw new ArgumentException("Active chat count cannot be negative.");
+
         Id = id;
         Seniority = seniority;
+        ActiveChatCount = activeChatCount;
     }
 
     public int GetMaxConcurrentChats()
@@ -27,5 +31,20 @@ public class Agent
         };
 
         return (int)Math.Floor(BaseChatCapacity * multiplier);
+    }
+
+    public bool CanTakeMoreChats()
+    {
+        return ActiveChatCount < GetMaxConcurrentChats();
+    }
+
+    public void AssignChat()
+    {
+        if (!CanTakeMoreChats())
+        {
+            throw new InvalidOperationException("Agent is already at maximum chat capacity.");
+        }
+
+        ActiveChatCount++;
     }
 }

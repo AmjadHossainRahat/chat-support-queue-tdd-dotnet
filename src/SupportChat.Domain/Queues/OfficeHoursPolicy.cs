@@ -7,11 +7,17 @@ public class OfficeHoursPolicy
 
     public OfficeHoursPolicy(TimeOnly startTime, TimeOnly endTime)
     {
-        throw new NotImplementedException();
+        if (endTime <= startTime)
+        {
+            throw new ArgumentException("End time must be later than start time.");
+        }
+
+        StartTime = startTime;
+        EndTime = endTime;
     }
 
     public bool IsWithinOfficeHours(TimeOnly currentTime)
     {
-        throw new NotImplementedException();
+        return currentTime >= StartTime && currentTime < EndTime;
     }
 }

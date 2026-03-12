@@ -7,6 +7,15 @@ public class SessionActivityPolicy
 
     public SessionActivityPolicy(TimeSpan expectedPollInterval, int missedPollThreshold)
     {
+        if (expectedPollInterval <= TimeSpan.Zero)
+        {
+            throw new ArgumentException("Expected poll interval must be greater than zero.");
+        }
+
+        if (missedPollThreshold <= 0)
+        {
+            throw new ArgumentException("Missed poll threshold must be greater than zero.");
+        }
 
         ExpectedPollInterval = expectedPollInterval;
         MissedPollThreshold = missedPollThreshold;
@@ -14,6 +23,14 @@ public class SessionActivityPolicy
 
     public bool IsInactive(DateTime lastPollAtUtc, DateTime nowUtc)
     {
-        throw new NotImplementedException();
+        if (nowUtc < lastPollAtUtc)
+        {
+            throw new ArgumentException("Current time cannot be earlier than last poll time.");
+        }
+
+        var elapsed = nowUtc - lastPollAtUtc;
+        var inactivityThreshold = TimeSpan.FromTicks(ExpectedPollInterval.Ticks * MissedPollThreshold);
+
+        return elapsed >= inactivityThreshold;
     }
 }

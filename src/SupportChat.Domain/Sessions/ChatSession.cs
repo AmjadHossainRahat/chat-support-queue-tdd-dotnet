@@ -26,21 +26,41 @@ public class ChatSession
 
     public void MarkAssigned()
     {
+        if (Status is SessionStatus.Inactive or SessionStatus.Rejected or SessionStatus.Completed)
+        {
+            throw new InvalidOperationException($"Cannot assign a session in {Status} state.");
+        }
+
         Status = SessionStatus.Assigned;
     }
 
     public void MarkInactive()
     {
+        if (Status is SessionStatus.Rejected or SessionStatus.Completed)
+        {
+            throw new InvalidOperationException($"Cannot mark a session in {Status} state as inactive.");
+        }
+
         Status = SessionStatus.Inactive;
     }
 
     public void MarkRejected()
     {
+        if (Status is SessionStatus.Assigned or SessionStatus.Completed)
+        {
+            throw new InvalidOperationException($"Cannot reject a session in {Status} state.");
+        }
+
         Status = SessionStatus.Rejected;
     }
 
     public void MarkCompleted()
     {
+        if (Status != SessionStatus.Assigned)
+        {
+            throw new InvalidOperationException("Only an assigned session can be completed.");
+        }
+
         Status = SessionStatus.Completed;
     }
 }

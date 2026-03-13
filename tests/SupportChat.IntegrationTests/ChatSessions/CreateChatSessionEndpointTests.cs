@@ -44,4 +44,46 @@ public class CreateChatSessionEndpointTests
         Assert.That(body!.AdmissionResult, Is.EqualTo("MainQueue"));
         Assert.That(body.SessionId, Is.Not.Null);
     }
+
+    [Test]
+    public async Task Should_route_to_overflow_when_main_queue_is_full_during_office_hours()
+    {
+        var request = new CreateChatSessionHttpRequest
+        {
+            CurrentMainQueueCount = 31,
+            CurrentOverflowQueueCount = 5,
+            NowUtc = new DateTime(2026, 3, 12, 11, 0, 0, DateTimeKind.Utc)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/chat-sessions", request);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var body = await response.Content.ReadFromJsonAsync<CreateChatSessionHttpResponse>();
+
+        Assert.That(body, Is.Not.Null);
+        Assert.That(body!.AdmissionResult, Is.EqualTo("OverflowQueue"));
+        Assert.That(body.SessionId, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task Should_reject_when_main_queue_is_full_outside_office_hours()
+    {
+        var request = new CreateChatSessionHttpRequest
+        {
+            CurrentMainQueueCount = 31,
+            CurrentOverflowQueueCount = 0,
+            NowUtc = new DateTime(2026, 3, 12, 22, 0, 0, DateTimeKind.Utc)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/chat-sessions", request);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var body = await response.Content.ReadFromJsonAsync<CreateChatSessionHttpResponse>();
+
+        Assert.That(body, Is.Not.Null);
+        Assert.That(body!.AdmissionResult, Is.EqualTo("Rejected"));
+        Assert.That(body.SessionId, Is.Null);
+    }
 }

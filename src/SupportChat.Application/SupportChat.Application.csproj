@@ -7,4 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SupportChat.Domain\SupportChat.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

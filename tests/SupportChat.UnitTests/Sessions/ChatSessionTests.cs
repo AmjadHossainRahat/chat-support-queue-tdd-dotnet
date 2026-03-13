@@ -40,15 +40,18 @@ public class ChatSessionTests
     }
 
     [Test]
-    public void Mark_assigned_should_set_status_to_assigned()
+    public void Mark_assigned_should_set_status_to_assigned_and_store_agent_id()
     {
         var session = new ChatSession(
             Guid.NewGuid(),
             new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
 
-        session.MarkAssigned();
+        var agentId = Guid.NewGuid();
+
+        session.MarkAssigned(agentId);
 
         Assert.That(session.Status, Is.EqualTo(SessionStatus.Assigned));
+        Assert.That(session.AssignedAgentId, Is.EqualTo(agentId));
     }
 
     [Test]

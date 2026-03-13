@@ -6,6 +6,7 @@ public class ChatSession
     public SessionStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; }
     public DateTime? LastPolledAtUtc { get; private set; }
+    public Guid? AssignedAgentId { get; private set; }
 
     public ChatSession(Guid id, DateTime createdAtUtc)
     {
@@ -24,13 +25,14 @@ public class ChatSession
         LastPolledAtUtc = polledAtUtc;
     }
 
-    public void MarkAssigned()
+    public void MarkAssigned(Guid agentId)
     {
         if (Status is SessionStatus.Inactive or SessionStatus.Rejected or SessionStatus.Completed)
         {
             throw new InvalidOperationException($"Cannot assign a session in {Status} state.");
         }
 
+        AssignedAgentId = agentId;
         Status = SessionStatus.Assigned;
     }
 

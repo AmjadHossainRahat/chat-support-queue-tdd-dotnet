@@ -25,6 +25,7 @@ public class AssignWaitingSessionUseCaseTests
         Assert.That(assignedAgent, Is.EqualTo(junior));
         Assert.That(junior.ActiveChatCount, Is.EqualTo(1));
         Assert.That(session.Status, Is.EqualTo(SessionStatus.Assigned));
+        Assert.That(session.AssignedAgentId, Is.EqualTo(junior.Id));
     }
 
     [Test]
@@ -44,6 +45,7 @@ public class AssignWaitingSessionUseCaseTests
         Assert.That(assignedAgent, Is.EqualTo(junior2));
         Assert.That(junior2.ActiveChatCount, Is.EqualTo(2));
         Assert.That(session.Status, Is.EqualTo(SessionStatus.Assigned));
+        Assert.That(session.AssignedAgentId, Is.EqualTo(junior2.Id));
     }
 
     [Test]

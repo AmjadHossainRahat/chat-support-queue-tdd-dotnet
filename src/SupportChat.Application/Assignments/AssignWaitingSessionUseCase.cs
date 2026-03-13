@@ -18,7 +18,7 @@ public class AssignWaitingSessionUseCase
         var selectedAgent = _assignmentPolicy.SelectNextAgent(agents);
 
         selectedAgent.AssignChat();
-        session.MarkAssigned();
+        session.MarkAssigned(selectedAgent.Id);
 
         return selectedAgent;
     }

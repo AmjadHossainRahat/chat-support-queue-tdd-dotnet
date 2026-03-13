@@ -1,4 +1,5 @@
-﻿using SupportChat.Domain.Sessions;
+﻿using NUnit.Framework;
+using SupportChat.Domain.Sessions;
 
 namespace SupportChat.UnitTests.Sessions;
 
@@ -11,7 +12,7 @@ public class ChatSessionLifecycleTests
 
         session.MarkInactive();
 
-        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned());
+        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned(Guid.NewGuid()));
     }
 
     [Test]
@@ -21,7 +22,7 @@ public class ChatSessionLifecycleTests
 
         session.MarkCompleted();
 
-        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned());
+        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned(Guid.NewGuid()));
     }
 
     [Test]
@@ -31,7 +32,7 @@ public class ChatSessionLifecycleTests
 
         session.MarkRejected();
 
-        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned());
+        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned(Guid.NewGuid()));
     }
 
     [Test]
@@ -62,7 +63,7 @@ public class ChatSessionLifecycleTests
     private static ChatSession CreateAssignedSession()
     {
         var session = CreateSession();
-        session.MarkAssigned();
+        session.MarkAssigned(Guid.NewGuid());
         return session;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace SupportChat.Api.Contracts.Sessions;
+﻿namespace SupportChat.API.Contracts.Sessions;
 
 public class RegisterPollHttpRequest
 {

@@ -1,21 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SupportChat.Api.Contracts.Sessions;
 using SupportChat.API.Contracts.Sessions;
 using SupportChat.API.Providers;
 using SupportChat.Application.Sessions;
-using SupportChat.Domain.Sessions;
 
-namespace SupportChat.API.Controllers;
+namespace SupportChat.Api.Controllers;
 
 [ApiController]
 [Route("api/chat-sessions")]
 public class ChatSessionsController : ControllerBase
 {
     private readonly CreateChatSessionUseCase _createChatSessionUseCase;
+    private readonly RegisterPollUseCase _registerPollUseCase;
 
-    public ChatSessionsController(CreateChatSessionUseCase createChatSessionUseCase)
+    public ChatSessionsController(
+        CreateChatSessionUseCase createChatSessionUseCase,
+        RegisterPollUseCase registerPollUseCase)
     {
         _createChatSessionUseCase = createChatSessionUseCase;
+        _registerPollUseCase = registerPollUseCase;
     }
 
     [HttpPost]
@@ -43,18 +45,25 @@ public class ChatSessionsController : ControllerBase
 
     [HttpPost("{id:guid}/poll")]
     [ProducesResponseType(typeof(RegisterPollHttpResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<RegisterPollHttpResponse> RegisterPoll(Guid id, [FromBody] RegisterPollHttpRequest request)
     {
-        var session = new ChatSession(id, request.SessionCreatedAtUtc);
-        session.RegisterPoll(request.PolledAtUtc);
-
-        var response = new RegisterPollHttpResponse
+        try
         {
-            SessionId = session.Id,
-            Status = session.Status.ToString(),
-            LastPolledAtUtc = session.LastPolledAtUtc
-        };
+            var session = _registerPollUseCase.Execute(id, request.PolledAtUtc);
 
-        return Ok(response);
+            var response = new RegisterPollHttpResponse
+            {
+                SessionId = session.Id,
+                Status = session.Status.ToString(),
+                LastPolledAtUtc = session.LastPolledAtUtc
+            };
+
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        {
+            return NotFound();
+        }
     }
 }

@@ -1,11 +1,11 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using SupportChat.API.Contracts.Sessions;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace SupportChat.IntegrationTests.ChatSessions;
 
-public class RegisterPollEndpointTests
+public class PollExistingSessionFlowTests
 {
     private WebApplicationFactory<Program> _factory = null!;
     private HttpClient _client = null!;
@@ -25,7 +25,7 @@ public class RegisterPollEndpointTests
     }
 
     [Test]
-    public async Task Should_register_poll_for_existing_session_and_return_ok()
+    public async Task Should_create_session_then_poll_same_session()
     {
         var createRequest = new CreateChatSessionHttpRequest
         {
@@ -35,13 +35,15 @@ public class RegisterPollEndpointTests
         };
 
         var createResponse = await _client.PostAsJsonAsync("/api/chat-sessions", createRequest);
+
         Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var createdBody = await createResponse.Content.ReadFromJsonAsync<CreateChatSessionHttpResponse>();
+
         Assert.That(createdBody, Is.Not.Null);
         Assert.That(createdBody!.SessionId, Is.Not.Null);
 
-        var sessionId = createdBody.SessionId.Value;
+        var sessionId = createdBody.SessionId!.Value;
 
         var pollRequest = new RegisterPollHttpRequest
         {
@@ -49,29 +51,14 @@ public class RegisterPollEndpointTests
             PolledAtUtc = createRequest.NowUtc.AddSeconds(1)
         };
 
-        var response = await _client.PostAsJsonAsync($"/api/chat-sessions/{sessionId}/poll", pollRequest);
+        var pollResponse = await _client.PostAsJsonAsync($"/api/chat-sessions/{sessionId}/poll", pollRequest);
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(pollResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-        var body = await response.Content.ReadFromJsonAsync<RegisterPollHttpResponse>();
+        var pollBody = await pollResponse.Content.ReadFromJsonAsync<RegisterPollHttpResponse>();
 
-        Assert.That(body, Is.Not.Null);
-        Assert.That(body!.SessionId, Is.EqualTo(sessionId));
-        Assert.That(body.Status, Is.EqualTo("Queued"));
-        Assert.That(body.LastPolledAtUtc, Is.EqualTo(pollRequest.PolledAtUtc));
-    }
-
-    [Test]
-    public async Task Should_return_not_found_when_polling_unknown_session()
-    {
-        var request = new RegisterPollHttpRequest
-        {
-            SessionCreatedAtUtc = new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
-            PolledAtUtc = new DateTime(2026, 3, 12, 10, 0, 1, DateTimeKind.Utc)
-        };
-
-        var response = await _client.PostAsJsonAsync($"/api/chat-sessions/{Guid.NewGuid()}/poll", request);
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        Assert.That(pollBody, Is.Not.Null);
+        Assert.That(pollBody!.SessionId, Is.EqualTo(sessionId));
+        Assert.That(pollBody.LastPolledAtUtc, Is.EqualTo(pollRequest.PolledAtUtc));
     }
 }

@@ -1,5 +1,7 @@
-﻿using SupportChat.Application.Sessions;
+﻿using SupportChat.Application.Abstractions;
+using SupportChat.Application.Sessions;
 using SupportChat.Domain.Queues;
+using SupportChat.Infrastructure.Persistence;
 
 namespace SupportChat.API.Extensions;
 
@@ -17,7 +19,10 @@ public static class ServiceCollectionExtensions
             return new QueueAdmissionPolicy(officeHoursPolicy);
         });
 
+        services.AddSingleton<IChatSessionRepository, InMemoryChatSessionRepository>();
+
         services.AddSingleton<CreateChatSessionUseCase>();
+        services.AddSingleton<RegisterPollUseCase>();
 
         return services;
     }

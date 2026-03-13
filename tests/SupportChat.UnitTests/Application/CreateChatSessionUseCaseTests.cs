@@ -1,7 +1,8 @@
-﻿using NUnit.Framework;
+﻿using SupportChat.Application.Abstractions;
 using SupportChat.Application.Sessions;
 using SupportChat.Domain.Agents;
 using SupportChat.Domain.Queues;
+using SupportChat.Domain.Sessions;
 using SupportChat.Domain.Teams;
 
 namespace SupportChat.UnitTests.Application;
@@ -13,11 +14,12 @@ public class CreateChatSessionUseCaseTests
     [Test]
     public void Should_create_session_in_main_queue_when_capacity_available()
     {
+        var repository = new InMemoryTestChatSessionRepository();
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
 
         var policy = new QueueAdmissionPolicy(_officeHours);
-        var useCase = new CreateChatSessionUseCase(policy);
+        var useCase = new CreateChatSessionUseCase(policy, repository);
 
         var result = useCase.Execute(
             mainTeam,
@@ -28,16 +30,18 @@ public class CreateChatSessionUseCaseTests
 
         Assert.That(result.AdmissionResult, Is.EqualTo(QueueAdmissionResult.MainQueue));
         Assert.That(result.SessionId, Is.Not.Null);
+        Assert.That(repository.GetById(result.SessionId!.Value), Is.Not.Null);
     }
 
     [Test]
     public void Should_route_to_overflow_when_main_queue_full_during_office_hours()
     {
+        var repository = new InMemoryTestChatSessionRepository();
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
 
         var policy = new QueueAdmissionPolicy(_officeHours);
-        var useCase = new CreateChatSessionUseCase(policy);
+        var useCase = new CreateChatSessionUseCase(policy, repository);
 
         var result = useCase.Execute(
             mainTeam,
@@ -48,16 +52,18 @@ public class CreateChatSessionUseCaseTests
 
         Assert.That(result.AdmissionResult, Is.EqualTo(QueueAdmissionResult.OverflowQueue));
         Assert.That(result.SessionId, Is.Not.Null);
+        Assert.That(repository.GetById(result.SessionId!.Value), Is.Not.Null);
     }
 
     [Test]
     public void Should_reject_when_main_queue_full_and_outside_office_hours()
     {
+        var repository = new InMemoryTestChatSessionRepository();
         var mainTeam = CreateTeamA();
         var overflowTeam = CreateOverflowTeam();
 
         var policy = new QueueAdmissionPolicy(_officeHours);
-        var useCase = new CreateChatSessionUseCase(policy);
+        var useCase = new CreateChatSessionUseCase(policy, repository);
 
         var result = useCase.Execute(
             mainTeam,
@@ -96,5 +102,20 @@ public class CreateChatSessionUseCaseTests
         };
 
         return new Team(Guid.NewGuid(), "Overflow", agents);
+    }
+
+    private sealed class InMemoryTestChatSessionRepository : IChatSessionRepository
+    {
+        private readonly Dictionary<Guid, ChatSession> _sessions = new();
+
+        public void Add(ChatSession session) => _sessions[session.Id] = session;
+
+        public ChatSession? GetById(Guid sessionId)
+        {
+            _sessions.TryGetValue(sessionId, out var session);
+            return session;
+        }
+
+        public void Update(ChatSession session) => _sessions[session.Id] = session;
     }
 }

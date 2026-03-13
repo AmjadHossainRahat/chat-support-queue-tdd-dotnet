@@ -13,6 +13,14 @@ public class MarkInactiveSessionUseCase
 
     public void Execute(ChatSession session, DateTime nowUtc)
     {
-        throw new NotImplementedException();
+        if (session.LastPolledAtUtc is null)
+        {
+            return;
+        }
+
+        if (_sessionActivityPolicy.IsInactive(session.LastPolledAtUtc.Value, nowUtc))
+        {
+            session.MarkInactive();
+        }
     }
 }

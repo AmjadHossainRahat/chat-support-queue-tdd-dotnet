@@ -15,6 +15,11 @@ public class AssignWaitingSessionUseCase
 
     public Agent Execute(ChatSession session, IEnumerable<Agent> agents)
     {
-        throw new NotImplementedException();
+        var selectedAgent = _assignmentPolicy.SelectNextAgent(agents);
+
+        selectedAgent.AssignChat();
+        session.MarkAssigned();
+
+        return selectedAgent;
     }
 }

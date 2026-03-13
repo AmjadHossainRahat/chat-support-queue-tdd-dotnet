@@ -6,6 +6,6 @@ public class RegisterPollUseCase
 {
     public void Execute(ChatSession session, DateTime polledAtUtc)
     {
-        throw new NotImplementedException();
+        session.RegisterPoll(polledAtUtc);
     }
 }

@@ -6,11 +6,11 @@ namespace SupportChat.Application.Sessions;
 
 public class CreateChatSessionUseCase
 {
-    private readonly QueueAdmissionPolicy _admissionPolicy;
+    private readonly QueueAdmissionPolicy _queueAdmissionPolicy;
 
-    public CreateChatSessionUseCase(QueueAdmissionPolicy admissionPolicy)
+    public CreateChatSessionUseCase(QueueAdmissionPolicy queueAdmissionPolicy)
     {
-        _admissionPolicy = admissionPolicy;
+        _queueAdmissionPolicy = queueAdmissionPolicy;
     }
 
     public CreateChatSessionResult Execute(
@@ -20,6 +20,26 @@ public class CreateChatSessionUseCase
         int currentOverflowQueueCount,
         DateTime nowUtc)
     {
-        throw new NotImplementedException();
+        var admissionResult = _queueAdmissionPolicy.Decide(
+            mainTeam,
+            currentMainQueueCount,
+            overflowTeam,
+            currentOverflowQueueCount,
+            TimeOnly.FromDateTime(nowUtc));
+
+        if (admissionResult == QueueAdmissionResult.Rejected)
+        {
+            return new CreateChatSessionResult(
+                AdmissionResult: QueueAdmissionResult.Rejected,
+                SessionId: null);
+        }
+
+        var session = new ChatSession(
+            id: Guid.NewGuid(),
+            createdAtUtc: nowUtc);
+
+        return new CreateChatSessionResult(
+            AdmissionResult: admissionResult,
+            SessionId: session.Id);
     }
 }

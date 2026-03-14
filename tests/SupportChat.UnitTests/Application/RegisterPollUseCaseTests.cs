@@ -83,6 +83,14 @@ public class RegisterPollUseCaseTests
             return session;
         }
 
+        public IReadOnlyCollection<ChatSession> GetQueuedSessions()
+        {
+            return _sessions.Values
+                .Where(x => x.Status == SessionStatus.Queued)
+                .OrderBy(x => x.CreatedAtUtc)
+                .ToList();
+        }
+
         public void Update(ChatSession session) => _sessions[session.Id] = session;
     }
 }

@@ -22,6 +22,14 @@ public class InMemoryChatSessionRepository : IChatSessionRepository
         return session;
     }
 
+    public IReadOnlyCollection<ChatSession> GetQueuedSessions()
+    {
+        return _sessions.Values
+            .Where(session => session.Status == SessionStatus.Queued)
+            .OrderBy(session => session.CreatedAtUtc)
+            .ToList();
+    }
+
     public void Update(ChatSession session)
     {
         _sessions[session.Id] = session;

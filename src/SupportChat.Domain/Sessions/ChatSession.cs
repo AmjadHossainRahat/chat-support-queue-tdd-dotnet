@@ -15,6 +15,23 @@ public class ChatSession
         Status = SessionStatus.Queued;
     }
 
+    public static ChatSession Rehydrate(
+        Guid id,
+        DateTime createdAtUtc,
+        SessionStatus status,
+        DateTime? lastPolledAtUtc,
+        Guid? assignedAgentId)
+    {
+        var session = new ChatSession(id, createdAtUtc)
+        {
+            Status = status,
+            LastPolledAtUtc = lastPolledAtUtc,
+            AssignedAgentId = assignedAgentId
+        };
+
+        return session;
+    }
+
     public void RegisterPoll(DateTime polledAtUtc)
     {
         if (polledAtUtc < CreatedAtUtc)

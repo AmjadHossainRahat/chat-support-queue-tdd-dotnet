@@ -1,4 +1,5 @@
-﻿using SupportChat.Application.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
+using SupportChat.Application.Abstractions;
 using SupportChat.Application.Assignments;
 using SupportChat.Application.Sessions;
 using SupportChat.Domain.Assignments;
@@ -10,8 +11,16 @@ namespace SupportChat.API.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddApplicationServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("SupportChat")
+                               ?? "Data Source=supportchat.db";
+
+        services.AddDbContext<SupportChatDbContext>(options =>
+            options.UseSqlite(connectionString));
+
         services.AddSingleton(new OfficeHoursPolicy(
             new TimeOnly(9, 0),
             new TimeOnly(17, 0)));
@@ -22,16 +31,16 @@ public static class ServiceCollectionExtensions
             return new QueueAdmissionPolicy(officeHoursPolicy);
         });
 
-        services.AddSingleton<IChatSessionRepository, InMemoryChatSessionRepository>();
+        services.AddScoped<IChatSessionRepository, SqliteChatSessionRepository>();
         services.AddSingleton<IAgentProvider, InMemoryAgentProvider>();
 
         services.AddSingleton<AssignmentPolicy>();
 
-        services.AddSingleton<CreateChatSessionUseCase>();
-        services.AddSingleton<RegisterPollUseCase>();
-        services.AddSingleton<AssignWaitingSessionUseCase>();
-        services.AddSingleton<AssignNextQueuedSessionUseCase>();
-        services.AddSingleton<QueuedSessionAssignmentProcessor>();
+        services.AddScoped<CreateChatSessionUseCase>();
+        services.AddScoped<RegisterPollUseCase>();
+        services.AddScoped<AssignWaitingSessionUseCase>();
+        services.AddScoped<AssignNextQueuedSessionUseCase>();
+        services.AddScoped<QueuedSessionAssignmentProcessor>();
 
         return services;
     }

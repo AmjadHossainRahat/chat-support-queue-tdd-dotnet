@@ -18,6 +18,7 @@ public class QueuedSessionAssignmentProcessor
 
     public ChatSession? Execute()
     {
-        throw new NotImplementedException();
+        var agents = _agentProvider.GetAvailableAgents();
+        return _assignNextQueuedSessionUseCase.Execute(agents);
     }
 }

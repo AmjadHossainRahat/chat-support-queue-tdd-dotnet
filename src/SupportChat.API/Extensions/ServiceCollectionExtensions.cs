@@ -1,7 +1,10 @@
 ﻿using SupportChat.Application.Abstractions;
+using SupportChat.Application.Assignments;
 using SupportChat.Application.Sessions;
+using SupportChat.Domain.Assignments;
 using SupportChat.Domain.Queues;
 using SupportChat.Infrastructure.Persistence;
+using SupportChat.Infrastructure.Providers;
 
 namespace SupportChat.API.Extensions;
 
@@ -20,9 +23,15 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IChatSessionRepository, InMemoryChatSessionRepository>();
+        services.AddSingleton<IAgentProvider, InMemoryAgentProvider>();
+
+        services.AddSingleton<AssignmentPolicy>();
 
         services.AddSingleton<CreateChatSessionUseCase>();
         services.AddSingleton<RegisterPollUseCase>();
+        services.AddSingleton<AssignWaitingSessionUseCase>();
+        services.AddSingleton<AssignNextQueuedSessionUseCase>();
+        services.AddSingleton<QueuedSessionAssignmentProcessor>();
 
         return services;
     }

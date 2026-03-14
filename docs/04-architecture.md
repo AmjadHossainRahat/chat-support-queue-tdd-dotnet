@@ -10,7 +10,7 @@ I do not want business behavior hidden inside controllers, timer callbacks, or d
 
 I am leaning toward this structure:
 
-- `src/SupportChat.Api`
+- `src/SupportChat.API`
 - `src/SupportChat.Worker`
 - `src/SupportChat.Application`
 - `src/SupportChat.Domain`

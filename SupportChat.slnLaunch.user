@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "src\\SupportChat.API\\SupportChat.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\SupportChat.Worker\\SupportChat.Worker.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

@@ -19,6 +19,19 @@ public class AssignNextQueuedSessionUseCase
 
     public ChatSession? Execute(IEnumerable<Agent> agents)
     {
-        throw new NotImplementedException();
+        var nextQueuedSession = _chatSessionRepository
+            .GetQueuedSessions()
+            .OrderBy(x => x.CreatedAtUtc)
+            .FirstOrDefault();
+
+        if (nextQueuedSession is null)
+        {
+            return null;
+        }
+
+        _assignWaitingSessionUseCase.Execute(nextQueuedSession, agents);
+        _chatSessionRepository.Update(nextQueuedSession);
+
+        return nextQueuedSession;
     }
 }

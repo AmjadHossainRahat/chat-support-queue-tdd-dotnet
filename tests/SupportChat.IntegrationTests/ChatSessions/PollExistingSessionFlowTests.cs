@@ -7,13 +7,15 @@ namespace SupportChat.IntegrationTests.ChatSessions;
 
 public class PollExistingSessionFlowTests
 {
-    private WebApplicationFactory<Program> _factory = null!;
+    // private WebApplicationFactory<Program> _factory = null!;
+    private CustomWebApplicationFactory _factory = null!;
     private HttpClient _client = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _factory = new WebApplicationFactory<Program>();
+        // _factory = new WebApplicationFactory<Program>();
+        _factory = new CustomWebApplicationFactory();
         _client = _factory.CreateClient();
     }
 

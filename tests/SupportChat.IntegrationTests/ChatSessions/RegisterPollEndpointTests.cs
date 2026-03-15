@@ -1,19 +1,20 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using SupportChat.API.Contracts.Sessions;
 
 namespace SupportChat.IntegrationTests.ChatSessions;
 
 public class RegisterPollEndpointTests
 {
-    private WebApplicationFactory<Program> _factory = null!;
+    // private WebApplicationFactory<Program> _factory = null!;
+    private CustomWebApplicationFactory _factory = null!;
     private HttpClient _client = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _factory = new WebApplicationFactory<Program>();
+        // _factory = new WebApplicationFactory<Program>();
+        _factory = new CustomWebApplicationFactory();
         _client = _factory.CreateClient();
     }
 

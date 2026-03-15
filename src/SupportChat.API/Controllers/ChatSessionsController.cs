@@ -11,13 +11,16 @@ public class ChatSessionsController : ControllerBase
 {
     private readonly CreateChatSessionUseCase _createChatSessionUseCase;
     private readonly RegisterPollUseCase _registerPollUseCase;
+    private readonly GetChatSessionByIdUseCase _getChatSessionByIdUseCase;
 
     public ChatSessionsController(
         CreateChatSessionUseCase createChatSessionUseCase,
-        RegisterPollUseCase registerPollUseCase)
+        RegisterPollUseCase registerPollUseCase,
+        GetChatSessionByIdUseCase getChatSessionByIdUseCase)
     {
         _createChatSessionUseCase = createChatSessionUseCase;
         _registerPollUseCase = registerPollUseCase;
+        _getChatSessionByIdUseCase = getChatSessionByIdUseCase;
     }
 
     [HttpPost]
@@ -38,6 +41,30 @@ public class ChatSessionsController : ControllerBase
         {
             AdmissionResult = result.AdmissionResult.ToString(),
             SessionId = result.SessionId
+        };
+
+        return Ok(response);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(GetChatSessionHttpResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<GetChatSessionHttpResponse> GetById(Guid id)
+    {
+        var session = _getChatSessionByIdUseCase.Execute(id);
+
+        if (session is null)
+        {
+            return NotFound();
+        }
+
+        var response = new GetChatSessionHttpResponse
+        {
+            SessionId = session.Id,
+            Status = session.Status.ToString(),
+            CreatedAtUtc = session.CreatedAtUtc,
+            LastPolledAtUtc = session.LastPolledAtUtc,
+            AssignedAgentId = session.AssignedAgentId
         };
 
         return Ok(response);

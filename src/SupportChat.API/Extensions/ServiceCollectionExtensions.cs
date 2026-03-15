@@ -40,6 +40,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RegisterPollUseCase>();
         services.AddScoped<AssignWaitingSessionUseCase>();
         services.AddScoped<AssignNextQueuedSessionUseCase>();
+        services.AddScoped<GetChatSessionByIdUseCase>();
+
         services.AddScoped<QueuedSessionAssignmentProcessor>();
 
         return services;

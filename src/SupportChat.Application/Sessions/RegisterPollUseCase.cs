@@ -14,7 +14,17 @@ public class RegisterPollUseCase
 
     public ChatSession Execute(Guid sessionId, DateTime polledAtUtc)
     {
-        var session = _chatSessionRepository.GetById(sessionId);
+        return ExecuteAsync(sessionId, polledAtUtc, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    public async Task<ChatSession> ExecuteAsync(
+        Guid sessionId,
+        DateTime polledAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var session = await _chatSessionRepository.GetByIdAsync(sessionId, cancellationToken);
 
         if (session is null)
         {
@@ -22,7 +32,7 @@ public class RegisterPollUseCase
         }
 
         session.RegisterPoll(polledAtUtc);
-        _chatSessionRepository.Update(session);
+        await _chatSessionRepository.UpdateAsync(session, cancellationToken);
 
         return session;
     }

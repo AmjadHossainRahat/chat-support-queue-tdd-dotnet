@@ -25,17 +25,20 @@ public class ChatSessionsController : ControllerBase
 
     [HttpPost]
     [ProducesResponseType(typeof(CreateChatSessionHttpResponse), StatusCodes.Status200OK)]
-    public ActionResult<CreateChatSessionHttpResponse> Create([FromBody] CreateChatSessionHttpRequest request)
+    public async Task<ActionResult<CreateChatSessionHttpResponse>> Create(
+        [FromBody] CreateChatSessionHttpRequest request,
+        CancellationToken cancellationToken)
     {
         var mainTeam = TeamProvider.CreateMainTeam();
         var overflowTeam = TeamProvider.CreateOverflowTeam();
 
-        var result = _createChatSessionUseCase.Execute(
+        var result = await _createChatSessionUseCase.ExecuteAsync(
             mainTeam,
             request.CurrentMainQueueCount,
             overflowTeam,
             request.CurrentOverflowQueueCount,
-            request.NowUtc);
+            request.NowUtc,
+            cancellationToken);
 
         var response = new CreateChatSessionHttpResponse
         {
@@ -49,9 +52,11 @@ public class ChatSessionsController : ControllerBase
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(GetChatSessionHttpResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<GetChatSessionHttpResponse> GetById(Guid id)
+    public async Task<ActionResult<GetChatSessionHttpResponse>> GetById(
+        Guid id,
+        CancellationToken cancellationToken)
     {
-        var session = _getChatSessionByIdUseCase.Execute(id);
+        var session = await _getChatSessionByIdUseCase.ExecuteAsync(id, cancellationToken);
 
         if (session is null)
         {
@@ -73,9 +78,15 @@ public class ChatSessionsController : ControllerBase
     [HttpPost("{id:guid}/poll")]
     [ProducesResponseType(typeof(RegisterPollHttpResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<RegisterPollHttpResponse> RegisterPoll(Guid id, [FromBody] RegisterPollHttpRequest request)
+    public async Task<ActionResult<RegisterPollHttpResponse>> RegisterPoll(
+        Guid id,
+        [FromBody] RegisterPollHttpRequest request,
+        CancellationToken cancellationToken)
     {
-        var session = _registerPollUseCase.Execute(id, request.PolledAtUtc);
+        var session = await _registerPollUseCase.ExecuteAsync(
+            id,
+            request.PolledAtUtc,
+            cancellationToken);
 
         var response = new RegisterPollHttpResponse
         {

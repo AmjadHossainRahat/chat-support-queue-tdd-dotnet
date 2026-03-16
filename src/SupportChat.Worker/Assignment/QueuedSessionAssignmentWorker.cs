@@ -25,7 +25,7 @@ public class QueuedSessionAssignmentWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var processor = scope.ServiceProvider.GetRequiredService<QueuedSessionAssignmentProcessor>();
 
-            var assignedSession = processor.Execute();
+            var assignedSession = await processor.ExecuteAsync(stoppingToken);
 
             if (assignedSession is not null)
             {

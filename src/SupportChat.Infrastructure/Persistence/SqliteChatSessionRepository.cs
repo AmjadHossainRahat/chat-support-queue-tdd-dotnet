@@ -21,11 +21,28 @@ public class SqliteChatSessionRepository : IChatSessionRepository
         _dbContext.SaveChanges();
     }
 
+    public async Task AddAsync(ChatSession session, CancellationToken cancellationToken = default)
+    {
+        var record = ToRecord(session);
+
+        await _dbContext.ChatSessions.AddAsync(record, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public ChatSession? GetById(Guid sessionId)
     {
         var record = _dbContext.ChatSessions
             .AsNoTracking()
             .SingleOrDefault(x => x.Id == sessionId);
+
+        return record is null ? null : ToDomain(record);
+    }
+
+    public async Task<ChatSession?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    {
+        var record = await _dbContext.ChatSessions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == sessionId, cancellationToken);
 
         return record is null ? null : ToDomain(record);
     }
@@ -37,6 +54,19 @@ public class SqliteChatSessionRepository : IChatSessionRepository
             .Where(x => x.Status == SessionStatus.Queued)
             .OrderBy(x => x.CreatedAtUtc)
             .ToList()
+            .Select(ToDomain)
+            .ToList();
+    }
+
+    public async Task<IReadOnlyCollection<ChatSession>> GetQueuedSessionsAsync(CancellationToken cancellationToken = default)
+    {
+        var records = await _dbContext.ChatSessions
+            .AsNoTracking()
+            .Where(x => x.Status == SessionStatus.Queued)
+            .OrderBy(x => x.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+        return records
             .Select(ToDomain)
             .ToList();
     }
@@ -56,6 +86,24 @@ public class SqliteChatSessionRepository : IChatSessionRepository
         existing.AssignedAgentId = session.AssignedAgentId;
 
         _dbContext.SaveChanges();
+    }
+
+    public async Task UpdateAsync(ChatSession session, CancellationToken cancellationToken = default)
+    {
+        var existing = await _dbContext.ChatSessions
+            .SingleOrDefaultAsync(x => x.Id == session.Id, cancellationToken);
+
+        if (existing is null)
+        {
+            throw new InvalidOperationException($"Session '{session.Id}' was not found.");
+        }
+
+        existing.Status = session.Status;
+        existing.CreatedAtUtc = session.CreatedAtUtc;
+        existing.LastPolledAtUtc = session.LastPolledAtUtc;
+        existing.AssignedAgentId = session.AssignedAgentId;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private static ChatSessionRecord ToRecord(ChatSession session)

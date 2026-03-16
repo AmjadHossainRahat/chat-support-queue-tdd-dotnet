@@ -14,6 +14,15 @@ public class GetChatSessionByIdUseCase
 
     public ChatSession? Execute(Guid sessionId)
     {
-        return _chatSessionRepository.GetById(sessionId);
+        return ExecuteAsync(sessionId, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    public Task<ChatSession?> ExecuteAsync(
+        Guid sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        return _chatSessionRepository.GetByIdAsync(sessionId, cancellationToken);
     }
 }

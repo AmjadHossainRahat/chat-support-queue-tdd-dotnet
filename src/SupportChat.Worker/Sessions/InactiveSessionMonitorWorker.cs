@@ -25,7 +25,7 @@ public class InactiveSessionMonitorWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var processor = scope.ServiceProvider.GetRequiredService<InactiveSessionProcessor>();
 
-            var processedCount = processor.Execute(DateTime.UtcNow);
+            var processedCount = await processor.ExecuteAsync(DateTime.UtcNow, stoppingToken);
 
             if (processedCount > 0)
             {

@@ -19,8 +19,16 @@ public class AssignNextQueuedSessionUseCase
 
     public ChatSession? Execute(IEnumerable<Agent> agents)
     {
-        var nextQueuedSession = _chatSessionRepository
-            .GetQueuedSessions()
+        return ExecuteAsync(agents, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    public async Task<ChatSession?> ExecuteAsync(
+        IEnumerable<Agent> agents,
+        CancellationToken cancellationToken = default)
+    {
+        var nextQueuedSession = (await _chatSessionRepository.GetQueuedSessionsAsync(cancellationToken))
             .OrderBy(x => x.CreatedAtUtc)
             .FirstOrDefault();
 
@@ -30,7 +38,7 @@ public class AssignNextQueuedSessionUseCase
         }
 
         _assignWaitingSessionUseCase.Execute(nextQueuedSession, agents);
-        _chatSessionRepository.Update(nextQueuedSession);
+        await _chatSessionRepository.UpdateAsync(nextQueuedSession, cancellationToken);
 
         return nextQueuedSession;
     }

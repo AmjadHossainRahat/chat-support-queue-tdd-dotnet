@@ -17,19 +17,30 @@ public class InactiveSessionProcessor
 
     public int Execute(DateTime nowUtc)
     {
+        return ExecuteAsync(nowUtc, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    public async Task<int> ExecuteAsync(
+        DateTime nowUtc,
+        CancellationToken cancellationToken = default)
+    {
         var processedCount = 0;
 
-        var queuedSessions = _chatSessionRepository.GetQueuedSessions();
+        var queuedSessions = await _chatSessionRepository.GetQueuedSessionsAsync(cancellationToken);
 
         foreach (var session in queuedSessions)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var previousStatus = session.Status;
 
             _markInactiveSessionUseCase.Execute(session, nowUtc);
 
             if (session.Status != previousStatus)
             {
-                _chatSessionRepository.Update(session);
+                await _chatSessionRepository.UpdateAsync(session, cancellationToken);
                 processedCount++;
             }
         }

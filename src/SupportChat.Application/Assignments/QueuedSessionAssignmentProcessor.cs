@@ -18,7 +18,14 @@ public class QueuedSessionAssignmentProcessor
 
     public ChatSession? Execute()
     {
+        return ExecuteAsync(CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    public Task<ChatSession?> ExecuteAsync(CancellationToken cancellationToken = default)
+    {
         var agents = _agentProvider.GetAvailableAgents();
-        return _assignNextQueuedSessionUseCase.Execute(agents);
+        return _assignNextQueuedSessionUseCase.ExecuteAsync(agents, cancellationToken);
     }
 }

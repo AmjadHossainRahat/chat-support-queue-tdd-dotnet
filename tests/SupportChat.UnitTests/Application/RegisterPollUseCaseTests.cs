@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using SupportChat.Application.Abstractions;
+﻿using SupportChat.Application.Abstractions;
 using SupportChat.Application.Sessions;
 using SupportChat.Domain.Sessions;
 
@@ -29,6 +28,22 @@ public class RegisterPollUseCaseTests
         var polledAtUtc = new DateTime(2026, 3, 12, 10, 0, 1, DateTimeKind.Utc);
 
         var result = _useCase.Execute(session.Id, polledAtUtc);
+
+        Assert.That(result.LastPolledAtUtc, Is.EqualTo(polledAtUtc));
+    }
+
+    [Test]
+    public async Task Should_update_last_poll_time_using_async_execution()
+    {
+        var session = new ChatSession(
+            Guid.NewGuid(),
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+
+        _repository.Add(session);
+
+        var polledAtUtc = new DateTime(2026, 3, 12, 10, 0, 1, DateTimeKind.Utc);
+
+        var result = await _useCase.ExecuteAsync(session.Id, polledAtUtc, CancellationToken.None);
 
         Assert.That(result.LastPolledAtUtc, Is.EqualTo(polledAtUtc));
     }

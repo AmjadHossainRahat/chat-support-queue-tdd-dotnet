@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SupportChat.Application\SupportChat.Application.csproj" />
     <ProjectReference Include="..\..\src\SupportChat.Domain\SupportChat.Domain.csproj" />
+    <ProjectReference Include="..\..\src\SupportChat.Worker\SupportChat.Worker.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,7 @@ using SupportChat.Application.Assignments;
 using SupportChat.Application.Sessions;
 using SupportChat.Domain.Assignments;
 using SupportChat.Domain.Queues;
+using SupportChat.Domain.Sessions;
 using SupportChat.Infrastructure.Persistence;
 using SupportChat.Infrastructure.Providers;
 
@@ -31,6 +32,10 @@ public static class ServiceCollectionExtensions
             return new QueueAdmissionPolicy(officeHoursPolicy);
         });
 
+        services.AddSingleton(new SessionActivityPolicy(
+            expectedPollInterval: TimeSpan.FromSeconds(1),
+            missedPollThreshold: 3));
+
         services.AddScoped<IChatSessionRepository, SqliteChatSessionRepository>();
         services.AddSingleton<IAgentProvider, InMemoryAgentProvider>();
 
@@ -41,8 +46,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AssignWaitingSessionUseCase>();
         services.AddScoped<AssignNextQueuedSessionUseCase>();
         services.AddScoped<GetChatSessionByIdUseCase>();
+        services.AddScoped<MarkInactiveSessionUseCase>();
 
         services.AddScoped<QueuedSessionAssignmentProcessor>();
+        services.AddScoped<InactiveSessionProcessor>();
 
         return services;
     }

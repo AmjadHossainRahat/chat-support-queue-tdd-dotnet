@@ -42,6 +42,8 @@ var host = builder.Build();
 using (var scope = host.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<SupportChatDbContext>();
+    //Console.WriteLine($"WORKER: SQLite connection string: {dbContext.Database.GetConnectionString()}");
+    dbContext.Database.EnsureDeleted();
     dbContext.Database.EnsureCreated();
 }
 

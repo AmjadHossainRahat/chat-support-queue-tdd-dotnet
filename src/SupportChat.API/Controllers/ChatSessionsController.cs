@@ -27,6 +27,12 @@ public class ChatSessionsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Creates a new chat session.
+    /// </summary>
+    /// <remarks>
+    /// Applies queue admission rules based on current queue state and submission time.
+    /// </remarks>
     [HttpPost]
     [ProducesResponseType(typeof(CreateChatSessionHttpResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<CreateChatSessionHttpResponse>> Create(
@@ -68,6 +74,9 @@ public class ChatSessionsController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Gets a chat session by id.
+    /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(GetChatSessionHttpResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -102,6 +111,9 @@ public class ChatSessionsController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Registers a polling event for a chat session.
+    /// </summary>
     [HttpPost("{id:guid}/poll")]
     [ProducesResponseType(typeof(RegisterPollHttpResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

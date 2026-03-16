@@ -21,6 +21,16 @@ SupportChat is a .NET 10 solution that simulates a support chat queue with:
 - `tests/SupportChat.UnitTests` — unit tests
 - `tests/SupportChat.IntegrationTests` — integration tests
 
+![System overview](docs/diagrams/System-overview.png)
+
+## Technical notes (added before writting codes, might not be up to date)
+- [Task analysis](docs/01-task-analysis.md)
+- [Assumptions](docs/02-assumptions.md)
+- [Business rules](docs/03-business-rules.md)
+- [Architecture](docs/04-architecture.md)
+- [API contract](docs/05-api-contract.md)
+- [Testing strategy](docs/06-testing-strategy.md)
+
 ## Key behaviors
 
 - Create chat session
@@ -31,7 +41,15 @@ SupportChat is a .NET 10 solution that simulates a support chat queue with:
 - Centralized exception handling
 - Correlation id propagation from API into persisted session and worker logs
 
+
 ## API endpoints
+
+### OpenAPI / Swagger
+
+- Swagger UI: `/swagger`
+- OpenAPI JSON: `/swagger/v1/swagger.json`
+
+![Swagger-ui](docs/diagrams/Swagger-ui.png)
 
 ### Create chat session
 `POST /api/chat-sessions`
@@ -161,6 +179,7 @@ dotnet run --project src/SupportChat.Worker
 ```bash
 dotnet test
 ```
+![dotnet-test](docs/diagrams/dotnet-test.png)
 
 ## Docker
 
@@ -206,10 +225,17 @@ docker compose logs supportchat-worker
 - both share the same Docker volume for the SQLite database
 - for a real production system, SQLite shared across multiple containers would usually be replaced with a stronger database setup
 
-## Assumptions and trade-offs
+## Intentional trade-offs
+- SQLite was chosen for simplicity and easy local execution
+- Background processing is implemented in-process via worker service instead of distributed messaging
+- Focus was placed on correctness, clarity, and testability over infrastructure complexity
+- The design favors explicit business rules over premature optimization
 
-- SQLite is used for simplicity and assignment speed
-- background workers poll on a short interval
-- correlation tracking is centered on the session creation lifecycle
-- Docker Compose is used for local orchestration only
-
+## What I would do next in production
+- Add CI pipeline with build + test + lint checks
+- Externalize team/shift configuration to database or configuration service
+- Add metrics and dashboards for queue depth, assignment lag, and inactivity detection
+- Add retry/idempotency protections for polling and worker operations
+- Strengthen concurrency handling for multi-instance deployment
+- Replace SQLite with production-grade relational storage
+- Add authentication/authorization if exposed beyond internal use

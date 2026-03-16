@@ -23,12 +23,12 @@ SupportChat is a .NET 10 solution that simulates a support chat queue with:
 
 ![System overview](docs/diagrams/System-overview.png)
 
-## Technical notes (added before writting codes, might not be up to date)
+## Technical notes (added before writting codes)
 - [Task analysis](docs/01-task-analysis.md)
 - [Assumptions](docs/02-assumptions.md)
 - [Business rules](docs/03-business-rules.md)
 - [Architecture](docs/04-architecture.md)
-- [API contract](docs/05-api-contract.md)
+- [API contract](docs/05-api-contract.md) - **OBSOLETE**
 - [Testing strategy](docs/06-testing-strategy.md)
 
 ## Key behaviors
@@ -106,6 +106,63 @@ Sample response body:
   "lastPolledAtUtc": "2026-03-12T10:00:01Z"
 }
 ```
+
+## Demo walkthrough
+
+### 1. Start the system
+```bash
+docker compose up --build
+```
+
+### 2. Create a chat session
+```http
+POST /api/chat-sessions
+Content-Type: application/json
+
+{
+  "currentMainQueueCount": 5,
+  "currentOverflowQueueCount": 0,
+  "nowUtc": "2026-03-12T10:00:00Z"
+}
+```
+
+**Expected result:**
+* Session is created
+* Admission decision is returned
+* Session enters queue if accepted
+
+### 3. Query the session
+```http
+GET /api/chat-sessions/{id}
+```
+
+**Expected result:**
+* Current status is returned
+* Assigned agent is null until assignment happens
+
+### 4. Register polling
+```http
+POST /api/chat-sessions/{id}/poll
+Content-Type: application/json
+
+{
+  "sessionCreatedAtUtc": "2026-03-12T10:00:00Z",
+  "polledAtUtc": "2026-03-12T10:00:01Z"
+}
+```
+**Expected result:**
+* Last poll time is updated
+
+### 5. Let worker assign the chat
+**Expected result:**
+* Background worker picks queued sessions
+* Session becomes assigned when agent capacity allows
+
+### 6. Stop polling
+**Expected result:**
+* Inactivity worker detects missed polls
+* Session is marked inactive according to business rules
+
 
 ## Correlation id
 

@@ -7,60 +7,63 @@ public class ChatSession
     public DateTime CreatedAtUtc { get; }
     public DateTime? LastPolledAtUtc { get; private set; }
     public Guid? AssignedAgentId { get; private set; }
+    public string CorrelationId { get; }
 
-    public ChatSession(Guid id, DateTime createdAtUtc)
-    {
-        Id = id;
-        CreatedAtUtc = createdAtUtc;
-        Status = SessionStatus.Queued;
-    }
-
-    public static ChatSession Rehydrate(
+    public ChatSession(
         Guid id,
         DateTime createdAtUtc,
-        SessionStatus status,
-        DateTime? lastPolledAtUtc,
-        Guid? assignedAgentId)
+        string correlationId)
     {
-        var session = new ChatSession(id, createdAtUtc)
+        if (string.IsNullOrWhiteSpace(correlationId))
         {
-            Status = status,
-            LastPolledAtUtc = lastPolledAtUtc,
-            AssignedAgentId = assignedAgentId
-        };
+            throw new ArgumentException("Correlation id is required.", nameof(correlationId));
+        }
 
-        return session;
+        Id = id;
+        CreatedAtUtc = createdAtUtc;
+        CorrelationId = correlationId;
+        Status = SessionStatus.Queued;
     }
 
     public void RegisterPoll(DateTime polledAtUtc)
     {
         if (polledAtUtc < CreatedAtUtc)
         {
-            throw new ArgumentException("Poll time cannot be earlier than session creation time.");
+            throw new ArgumentException("Poll time cannot be earlier than session creation time.", nameof(polledAtUtc));
         }
 
         LastPolledAtUtc = polledAtUtc;
     }
 
-    public void MarkAssigned(Guid agentId)
+    public void AssignTo(Guid agentId)
     {
-        if (Status is SessionStatus.Inactive or SessionStatus.Rejected or SessionStatus.Completed)
+        if (agentId == Guid.Empty)
+        {
+            throw new ArgumentException("Assigned agent id cannot be empty.", nameof(agentId));
+        }
+
+        if (Status != SessionStatus.Queued)
         {
             throw new InvalidOperationException($"Cannot assign a session in {Status} state.");
         }
 
-        AssignedAgentId = agentId;
         Status = SessionStatus.Assigned;
+        AssignedAgentId = agentId;
     }
 
     public void MarkInactive()
     {
-        if (Status is SessionStatus.Rejected or SessionStatus.Completed)
+        Status = SessionStatus.Inactive;
+    }
+
+    public void MarkCompleted()
+    {
+        if (Status != SessionStatus.Assigned)
         {
-            throw new InvalidOperationException($"Cannot mark a session in {Status} state as inactive.");
+            throw new InvalidOperationException("Only an assigned session can be completed.");
         }
 
-        Status = SessionStatus.Inactive;
+        Status = SessionStatus.Completed;
     }
 
     public void MarkRejected()
@@ -73,13 +76,21 @@ public class ChatSession
         Status = SessionStatus.Rejected;
     }
 
-    public void MarkCompleted()
+    public static ChatSession Rehydrate(
+        Guid id,
+        DateTime createdAtUtc,
+        SessionStatus status,
+        DateTime? lastPolledAtUtc,
+        Guid? assignedAgentId,
+        string correlationId)
     {
-        if (Status != SessionStatus.Assigned)
+        var session = new ChatSession(id, createdAtUtc, correlationId)
         {
-            throw new InvalidOperationException("Only an assigned session can be completed.");
-        }
+            Status = status,
+            LastPolledAtUtc = lastPolledAtUtc,
+            AssignedAgentId = assignedAgentId
+        };
 
-        Status = SessionStatus.Completed;
+        return session;
     }
 }

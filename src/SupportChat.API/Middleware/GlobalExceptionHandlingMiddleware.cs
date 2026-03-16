@@ -24,7 +24,11 @@ public class GlobalExceptionHandlingMiddleware
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
         {
-            _logger.LogWarning(ex, "Request failed because resource was not found");
+            _logger.LogWarning(
+                ex,
+                "Request failed because requested resource was not found for {Method} {Path}",
+                httpContext.Request.Method,
+                httpContext.Request.Path);
 
             await WriteProblemDetailsAsync(
                 httpContext,
@@ -34,13 +38,17 @@ public class GlobalExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception while processing request");
+            _logger.LogError(
+                ex,
+                "Unhandled exception while processing {Method} {Path}",
+                httpContext.Request.Method,
+                httpContext.Request.Path);
 
             await WriteProblemDetailsAsync(
                 httpContext,
                 StatusCodes.Status500InternalServerError,
                 "Unexpected server error",
-                ex.Message);
+                "An unexpected error occurred.");
         }
     }
 

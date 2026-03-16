@@ -13,7 +13,8 @@ public class InactiveSessionProcessorTests
 
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         session.RegisterPoll(new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
         repository.Add(session);
@@ -42,7 +43,8 @@ public class InactiveSessionProcessorTests
 
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         session.RegisterPoll(new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
         repository.Add(session);

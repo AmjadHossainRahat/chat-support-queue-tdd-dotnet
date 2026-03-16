@@ -9,4 +9,5 @@ public class ChatSessionRecord
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? LastPolledAtUtc { get; set; }
     public Guid? AssignedAgentId { get; set; }
+    public string CorrelationId { get; set; } = string.Empty;
 }

@@ -15,11 +15,13 @@ public class AssignNextQueuedSessionUseCaseTests
 
         var olderSession = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         var newerSession = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 5, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 5, DateTimeKind.Utc),
+            "corr-1");
 
         repository.Add(olderSession);
         repository.Add(newerSession);
@@ -64,7 +66,8 @@ public class AssignNextQueuedSessionUseCaseTests
 
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         repository.Add(session);
 

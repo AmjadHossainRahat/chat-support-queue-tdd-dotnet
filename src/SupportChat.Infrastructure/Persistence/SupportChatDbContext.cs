@@ -28,6 +28,8 @@ public class SupportChatDbContext : DbContext
             entity.Property(x => x.LastPolledAtUtc);
 
             entity.Property(x => x.AssignedAgentId);
+
+            entity.Property(x => x.CorrelationId);
         });
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SupportChat.Application.Abstractions;
+using SupportChat.Domain.Sessions;
 
 namespace SupportChat.Application.Sessions;
 

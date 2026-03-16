@@ -13,7 +13,8 @@ public class AssignWaitingSessionUseCaseTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         var junior = new Agent(Guid.NewGuid(), Seniority.Junior, activeChatCount: 0);
         var mid = new Agent(Guid.NewGuid(), Seniority.Mid, activeChatCount: 0);
@@ -33,7 +34,8 @@ public class AssignWaitingSessionUseCaseTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         var junior1 = new Agent(Guid.NewGuid(), Seniority.Junior, activeChatCount: 2);
         var junior2 = new Agent(Guid.NewGuid(), Seniority.Junior, activeChatCount: 1);
@@ -53,7 +55,8 @@ public class AssignWaitingSessionUseCaseTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         var junior = new Agent(Guid.NewGuid(), Seniority.Junior, activeChatCount: 4);
         var mid = new Agent(Guid.NewGuid(), Seniority.Mid, activeChatCount: 6);

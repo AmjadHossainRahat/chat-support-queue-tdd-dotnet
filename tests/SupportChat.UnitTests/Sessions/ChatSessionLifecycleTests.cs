@@ -12,7 +12,7 @@ public class ChatSessionLifecycleTests
 
         session.MarkInactive();
 
-        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned(Guid.NewGuid()));
+        Assert.Throws<InvalidOperationException>(() => session.AssignTo(Guid.NewGuid()));
     }
 
     [Test]
@@ -22,7 +22,7 @@ public class ChatSessionLifecycleTests
 
         session.MarkCompleted();
 
-        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned(Guid.NewGuid()));
+        Assert.Throws<InvalidOperationException>(() => session.AssignTo(Guid.NewGuid()));
     }
 
     [Test]
@@ -32,7 +32,7 @@ public class ChatSessionLifecycleTests
 
         session.MarkRejected();
 
-        Assert.Throws<InvalidOperationException>(() => session.MarkAssigned(Guid.NewGuid()));
+        Assert.Throws<InvalidOperationException>(() => session.AssignTo(Guid.NewGuid()));
     }
 
     [Test]
@@ -57,13 +57,14 @@ public class ChatSessionLifecycleTests
     {
         return new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
     }
 
     private static ChatSession CreateAssignedSession()
     {
         var session = CreateSession();
-        session.MarkAssigned(Guid.NewGuid());
+        session.AssignTo(Guid.NewGuid());
         return session;
     }
 }

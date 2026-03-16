@@ -20,22 +20,38 @@ public class QueuedSessionAssignmentWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Queued session assignment worker started");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = _serviceProvider.CreateScope();
             var processor = scope.ServiceProvider.GetRequiredService<QueuedSessionAssignmentProcessor>();
 
+            _logger.LogDebug("Queued session assignment cycle started");
+
             var assignedSession = await processor.ExecuteAsync(stoppingToken);
 
             if (assignedSession is not null)
             {
-                _logger.LogInformation(
-                    "Assigned queued session {SessionId} to agent {AgentId}",
-                    assignedSession.Id,
-                    assignedSession.AssignedAgentId);
+                using (_logger.BeginScope(new Dictionary<string, object>
+                {
+                    ["CorrelationId"] = assignedSession.CorrelationId
+                }))
+                {
+                    _logger.LogInformation(
+                        "Assigned queued session {SessionId} to agent {AgentId}",
+                        assignedSession.Id,
+                        assignedSession.AssignedAgentId);
+                }
+            }
+            else
+            {
+                _logger.LogDebug("No queued session was assigned in this cycle");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
+
+        _logger.LogInformation("Queued session assignment worker stopped");
     }
 }

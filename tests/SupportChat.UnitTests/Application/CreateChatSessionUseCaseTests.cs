@@ -26,7 +26,8 @@ public class CreateChatSessionUseCaseTests
             currentMainQueueCount: 5,
             overflowTeam,
             currentOverflowQueueCount: 0,
-            nowUtc: new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            nowUtc: new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         Assert.That(result.AdmissionResult, Is.EqualTo(QueueAdmissionResult.MainQueue));
         Assert.That(result.SessionId, Is.Not.Null);
@@ -48,7 +49,8 @@ public class CreateChatSessionUseCaseTests
             currentMainQueueCount: mainTeam.GetQueueLimit(),
             overflowTeam,
             currentOverflowQueueCount: 1,
-            nowUtc: new DateTime(2026, 3, 12, 11, 0, 0, DateTimeKind.Utc));
+            nowUtc: new DateTime(2026, 3, 12, 11, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         Assert.That(result.AdmissionResult, Is.EqualTo(QueueAdmissionResult.OverflowQueue));
         Assert.That(result.SessionId, Is.Not.Null);
@@ -70,7 +72,8 @@ public class CreateChatSessionUseCaseTests
             currentMainQueueCount: mainTeam.GetQueueLimit(),
             overflowTeam,
             currentOverflowQueueCount: 0,
-            nowUtc: new DateTime(2026, 3, 12, 22, 0, 0, DateTimeKind.Utc));
+            nowUtc: new DateTime(2026, 3, 12, 22, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         Assert.That(result.AdmissionResult, Is.EqualTo(QueueAdmissionResult.Rejected));
         Assert.That(result.SessionId, Is.Null);

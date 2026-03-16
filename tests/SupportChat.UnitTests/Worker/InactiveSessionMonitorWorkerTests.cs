@@ -16,7 +16,8 @@ public class InactiveSessionMonitorWorkerTests
 
         var session = new ChatSession(
             Guid.NewGuid(),
-            DateTime.UtcNow.AddMinutes(-2));
+            DateTime.UtcNow.AddMinutes(-2),
+            "corr-1");
 
         session.RegisterPoll(DateTime.UtcNow.AddMinutes(-2));
         repository.Add(session);
@@ -29,6 +30,7 @@ public class InactiveSessionMonitorWorkerTests
                     missedPollThreshold: 3)));
 
         var serviceProvider = new ServiceCollection()
+            .AddSingleton<SupportChat.Application.Abstractions.IChatSessionRepository>(repository)
             .AddSingleton(processor)
             .BuildServiceProvider();
 
@@ -44,6 +46,7 @@ public class InactiveSessionMonitorWorkerTests
 
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Status, Is.EqualTo(SessionStatus.Inactive));
+        Assert.That(updated.CorrelationId, Is.EqualTo("corr-1"));
     }
 
     private sealed class InMemoryTestChatSessionRepository : IChatSessionRepository

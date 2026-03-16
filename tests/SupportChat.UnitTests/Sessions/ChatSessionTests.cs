@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using SupportChat.Domain.Sessions;
+﻿using SupportChat.Domain.Sessions;
 
 namespace SupportChat.UnitTests.Sessions;
 
@@ -10,7 +9,8 @@ public class ChatSessionTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         Assert.That(session.Status, Is.EqualTo(SessionStatus.Queued));
     }
@@ -21,7 +21,7 @@ public class ChatSessionTests
         var createdAt = new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc);
         var polledAt = createdAt.AddSeconds(1);
 
-        var session = new ChatSession(Guid.NewGuid(), createdAt);
+        var session = new ChatSession(Guid.NewGuid(), createdAt, "corr-1");
 
         session.RegisterPoll(polledAt);
 
@@ -34,7 +34,7 @@ public class ChatSessionTests
         var createdAt = new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc);
         var invalidPollTime = createdAt.AddSeconds(-1);
 
-        var session = new ChatSession(Guid.NewGuid(), createdAt);
+        var session = new ChatSession(Guid.NewGuid(), createdAt, "corr-1");
 
         Assert.Throws<ArgumentException>(() => session.RegisterPoll(invalidPollTime));
     }
@@ -44,11 +44,11 @@ public class ChatSessionTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc), "corr-1");
 
         var agentId = Guid.NewGuid();
 
-        session.MarkAssigned(agentId);
+        session.AssignTo(agentId);
 
         Assert.That(session.Status, Is.EqualTo(SessionStatus.Assigned));
         Assert.That(session.AssignedAgentId, Is.EqualTo(agentId));
@@ -59,7 +59,8 @@ public class ChatSessionTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         session.MarkInactive();
 

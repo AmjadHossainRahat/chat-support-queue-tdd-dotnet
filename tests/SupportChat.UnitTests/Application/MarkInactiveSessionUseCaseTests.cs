@@ -10,7 +10,8 @@ public class MarkInactiveSessionUseCaseTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         session.RegisterPoll(new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
 
@@ -32,7 +33,8 @@ public class MarkInactiveSessionUseCaseTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         session.RegisterPoll(new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
 
@@ -54,7 +56,8 @@ public class MarkInactiveSessionUseCaseTests
     {
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         var activityPolicy = new SessionActivityPolicy(
             expectedPollInterval: TimeSpan.FromSeconds(1),

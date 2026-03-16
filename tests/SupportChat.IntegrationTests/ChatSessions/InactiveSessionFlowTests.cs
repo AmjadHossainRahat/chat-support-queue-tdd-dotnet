@@ -39,7 +39,14 @@ public class InactiveSessionFlowTests
             NowUtc = createdAtUtc
         };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/chat-sessions", createRequest);
+        var message = new HttpRequestMessage(HttpMethod.Post, "/api/chat-sessions")
+        {
+            Content = JsonContent.Create(createRequest)
+        };
+
+        message.Headers.Add("X-Correlation-Id", "corr-int-1");
+
+        var createResponse = await _client.SendAsync(message);
 
         Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
@@ -63,19 +70,26 @@ public class InactiveSessionFlowTests
         using (var scope = _factory.Services.CreateScope())
         {
             var processor = scope.ServiceProvider.GetRequiredService<InactiveSessionProcessor>();
-            var processedCount = processor.Execute(processorRunAtUtc);
+            var repository = scope.ServiceProvider.GetRequiredService<SupportChat.Application.Abstractions.IChatSessionRepository>();
+
+            var processedCount = await processor.ExecuteAsync(processorRunAtUtc);
 
             Assert.That(processedCount, Is.EqualTo(1));
+
+            var session = await repository.GetByIdAsync(sessionId);
+
+            Assert.That(session, Is.Not.Null);
+            Assert.That(session!.CorrelationId, Is.EqualTo("corr-int-1"));
         }
 
         var getResponse = await _client.GetAsync($"/api/chat-sessions/{sessionId}");
 
         Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-        var session = await getResponse.Content.ReadFromJsonAsync<GetChatSessionHttpResponse>();
+        var sessionResponse = await getResponse.Content.ReadFromJsonAsync<GetChatSessionHttpResponse>();
 
-        Assert.That(session, Is.Not.Null);
-        Assert.That(session!.SessionId, Is.EqualTo(sessionId));
-        Assert.That(session.Status, Is.EqualTo("Inactive"));
+        Assert.That(sessionResponse, Is.Not.Null);
+        Assert.That(sessionResponse!.SessionId, Is.EqualTo(sessionId));
+        Assert.That(sessionResponse.Status, Is.EqualTo("Inactive"));
     }
 }

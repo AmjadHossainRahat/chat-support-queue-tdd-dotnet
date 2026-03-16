@@ -18,7 +18,8 @@ public class QueuedSessionAssignmentWorkerTests
 
         var session = new ChatSession(
             Guid.NewGuid(),
-            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc));
+            new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc),
+            "corr-1");
 
         repository.Add(session);
 
@@ -50,6 +51,7 @@ public class QueuedSessionAssignmentWorkerTests
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Status, Is.EqualTo(SessionStatus.Assigned));
         Assert.That(updated.AssignedAgentId, Is.EqualTo(availableAgent.Id));
+        Assert.That(updated.CorrelationId, Is.EqualTo("corr-1"));
     }
 
     private sealed class InMemoryTestAgentProvider : IAgentProvider

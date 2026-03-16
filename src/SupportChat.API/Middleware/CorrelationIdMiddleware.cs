@@ -30,15 +30,14 @@ public class CorrelationIdMiddleware
         }))
         {
             _logger.LogInformation(
-                "Handling HTTP {Method} {Path} with correlation id {CorrelationId}",
+                "HTTP request started: {Method} {Path}",
                 httpContext.Request.Method,
-                httpContext.Request.Path,
-                correlationId);
+                httpContext.Request.Path);
 
             await _next(httpContext);
 
             _logger.LogInformation(
-                "Completed HTTP {Method} {Path} with status code {StatusCode}",
+                "HTTP request completed: {Method} {Path} responded {StatusCode}",
                 httpContext.Request.Method,
                 httpContext.Request.Path,
                 httpContext.Response.StatusCode);

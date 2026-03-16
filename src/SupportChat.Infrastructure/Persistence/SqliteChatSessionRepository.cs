@@ -84,6 +84,7 @@ public class SqliteChatSessionRepository : IChatSessionRepository
         existing.CreatedAtUtc = session.CreatedAtUtc;
         existing.LastPolledAtUtc = session.LastPolledAtUtc;
         existing.AssignedAgentId = session.AssignedAgentId;
+        existing.CorrelationId = session.CorrelationId;
 
         _dbContext.SaveChanges();
     }
@@ -102,6 +103,7 @@ public class SqliteChatSessionRepository : IChatSessionRepository
         existing.CreatedAtUtc = session.CreatedAtUtc;
         existing.LastPolledAtUtc = session.LastPolledAtUtc;
         existing.AssignedAgentId = session.AssignedAgentId;
+        existing.CorrelationId = session.CorrelationId;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
@@ -114,7 +116,8 @@ public class SqliteChatSessionRepository : IChatSessionRepository
             Status = session.Status,
             CreatedAtUtc = session.CreatedAtUtc,
             LastPolledAtUtc = session.LastPolledAtUtc,
-            AssignedAgentId = session.AssignedAgentId
+            AssignedAgentId = session.AssignedAgentId,
+            CorrelationId = session.CorrelationId
         };
     }
 
@@ -125,6 +128,7 @@ public class SqliteChatSessionRepository : IChatSessionRepository
             record.CreatedAtUtc,
             record.Status,
             record.LastPolledAtUtc,
-            record.AssignedAgentId);
+            record.AssignedAgentId,
+            record.CorrelationId);
     }
 }

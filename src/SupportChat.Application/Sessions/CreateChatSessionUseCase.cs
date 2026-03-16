@@ -23,7 +23,8 @@ public class CreateChatSessionUseCase
         int currentMainQueueCount,
         Team overflowTeam,
         int currentOverflowQueueCount,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        string correlationId)
     {
         return ExecuteAsync(
                 mainTeam,
@@ -31,6 +32,7 @@ public class CreateChatSessionUseCase
                 overflowTeam,
                 currentOverflowQueueCount,
                 nowUtc,
+                correlationId,
                 CancellationToken.None)
             .GetAwaiter()
             .GetResult();
@@ -42,6 +44,7 @@ public class CreateChatSessionUseCase
         Team overflowTeam,
         int currentOverflowQueueCount,
         DateTime nowUtc,
+        string correlationId,
         CancellationToken cancellationToken = default)
     {
         var admissionResult = _queueAdmissionPolicy.Decide(
@@ -60,7 +63,8 @@ public class CreateChatSessionUseCase
 
         var session = new ChatSession(
             id: Guid.NewGuid(),
-            createdAtUtc: nowUtc);
+            createdAtUtc: nowUtc,
+            correlationId: correlationId);
 
         await _chatSessionRepository.AddAsync(session, cancellationToken);
 

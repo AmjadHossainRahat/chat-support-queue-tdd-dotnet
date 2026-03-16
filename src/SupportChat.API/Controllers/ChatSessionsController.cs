@@ -75,22 +75,15 @@ public class ChatSessionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<RegisterPollHttpResponse> RegisterPoll(Guid id, [FromBody] RegisterPollHttpRequest request)
     {
-        try
-        {
-            var session = _registerPollUseCase.Execute(id, request.PolledAtUtc);
+        var session = _registerPollUseCase.Execute(id, request.PolledAtUtc);
 
-            var response = new RegisterPollHttpResponse
-            {
-                SessionId = session.Id,
-                Status = session.Status.ToString(),
-                LastPolledAtUtc = session.LastPolledAtUtc
-            };
-
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        var response = new RegisterPollHttpResponse
         {
-            return NotFound();
-        }
+            SessionId = session.Id,
+            Status = session.Status.ToString(),
+            LastPolledAtUtc = session.LastPolledAtUtc
+        };
+
+        return Ok(response);
     }
 }

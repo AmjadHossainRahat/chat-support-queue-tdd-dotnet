@@ -1,0 +1,65 @@
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace SupportChat.API.Middleware;
+
+public class GlobalExceptionHandlingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<GlobalExceptionHandlingMiddleware> _logger;
+
+    public GlobalExceptionHandlingMiddleware(
+        RequestDelegate next,
+        ILogger<GlobalExceptionHandlingMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext httpContext)
+    {
+        try
+        {
+            await _next(httpContext);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        {
+            _logger.LogWarning(ex, "Request failed because resource was not found");
+
+            await WriteProblemDetailsAsync(
+                httpContext,
+                StatusCodes.Status404NotFound,
+                "Resource not found",
+                ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception while processing request");
+
+            await WriteProblemDetailsAsync(
+                httpContext,
+                StatusCodes.Status500InternalServerError,
+                "Unexpected server error",
+                ex.Message);
+        }
+    }
+
+    private static async Task WriteProblemDetailsAsync(
+        HttpContext httpContext,
+        int statusCode,
+        string title,
+        string detail)
+    {
+        httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.ContentType = "application/problem+json";
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
+            Instance = httpContext.Request.Path
+        };
+
+        await httpContext.Response.WriteAsJsonAsync(problemDetails);
+    }
+}

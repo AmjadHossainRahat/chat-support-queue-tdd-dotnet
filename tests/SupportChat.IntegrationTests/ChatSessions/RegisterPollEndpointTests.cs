@@ -1,19 +1,20 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using SupportChat.API.Contracts.Sessions;
 
 namespace SupportChat.IntegrationTests.ChatSessions;
 
 public class RegisterPollEndpointTests
 {
-    // private WebApplicationFactory<Program> _factory = null!;
     private CustomWebApplicationFactory _factory = null!;
     private HttpClient _client = null!;
 
     [SetUp]
     public void SetUp()
     {
-        // _factory = new WebApplicationFactory<Program>();
         _factory = new CustomWebApplicationFactory();
         _client = _factory.CreateClient();
     }
@@ -63,7 +64,7 @@ public class RegisterPollEndpointTests
     }
 
     [Test]
-    public async Task Should_return_not_found_when_polling_unknown_session()
+    public async Task Should_return_problem_details_when_polling_unknown_session()
     {
         var request = new RegisterPollHttpRequest
         {
@@ -74,5 +75,15 @@ public class RegisterPollEndpointTests
         var response = await _client.PostAsJsonAsync($"/api/chat-sessions/{Guid.NewGuid()}/poll", request);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo(MediaTypeNames.Application.Json));
+
+        var body = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(body);
+
+        var root = document.RootElement;
+
+        Assert.That(root.GetProperty("status").GetInt32(), Is.EqualTo((int)HttpStatusCode.NotFound));
+        Assert.That(root.GetProperty("title").GetString(), Is.EqualTo("Resource not found"));
+        Assert.That(root.GetProperty("detail").GetString(), Does.Contain("was not found"));
     }
 }

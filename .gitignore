@@ -53,4 +53,10 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 
+# Code editor + IDE files and folders
 *.vs
+
+# SQLite runtime files
+*.db
+*.db-shm
+*.db-wal

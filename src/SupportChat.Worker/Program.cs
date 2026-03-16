@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SupportChat.Application.Abstractions;
@@ -7,6 +6,7 @@ using SupportChat.Application.Assignments;
 using SupportChat.Application.Sessions;
 using SupportChat.Domain.Assignments;
 using SupportChat.Domain.Sessions;
+using SupportChat.Infrastructure.Configuration;
 using SupportChat.Infrastructure.Persistence;
 using SupportChat.Infrastructure.Providers;
 using SupportChat.Worker.Assignment;
@@ -14,8 +14,7 @@ using SupportChat.Worker.Sessions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("SupportChat")
-                       ?? "Data Source=supportchat.db";
+var connectionString = builder.Configuration.GetRequiredConnectionString("SupportChat");
 
 builder.Services.AddDbContext<SupportChatDbContext>(options =>
     options.UseSqlite(connectionString));

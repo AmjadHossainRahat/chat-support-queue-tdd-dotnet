@@ -5,6 +5,7 @@ using SupportChat.Application.Sessions;
 using SupportChat.Domain.Assignments;
 using SupportChat.Domain.Queues;
 using SupportChat.Domain.Sessions;
+using SupportChat.Infrastructure.Configuration;
 using SupportChat.Infrastructure.Persistence;
 using SupportChat.Infrastructure.Providers;
 
@@ -16,8 +17,7 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("SupportChat")
-                               ?? "Data Source=supportchat.db";
+        var connectionString = configuration.GetRequiredConnectionString("SupportChat");
 
         services.AddDbContext<SupportChatDbContext>(options =>
             options.UseSqlite(connectionString));

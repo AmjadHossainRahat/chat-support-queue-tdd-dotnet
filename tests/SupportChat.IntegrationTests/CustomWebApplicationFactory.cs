@@ -1,35 +1,44 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using SupportChat.Application.Abstractions;
 using SupportChat.Infrastructure.Persistence;
 
 namespace SupportChat.IntegrationTests;
 
-public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public string DatabasePath { get; } =
-        Path.Combine(Path.GetTempPath(), $"supportchat-test-{Guid.NewGuid():N}.db");
+    private readonly string _databasePath;
+    private readonly string _connectionString;
 
     public CustomWebApplicationFactory()
     {
-        IntegrationTestDatabaseRegistry.Register(DatabasePath);
+        _databasePath = Path.Combine(
+            Path.GetTempPath(),
+            $"supportchat-test-{Guid.NewGuid():N}.db");
+
+        _connectionString = $"Data Source={_databasePath}";
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll(typeof(DbContextOptions<SupportChatDbContext>));
-            services.RemoveAll(typeof(SupportChatDbContext));
-            services.RemoveAll(typeof(IChatSessionRepository));
+            var dbContextDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(DbContextOptions<SupportChatDbContext>));
+
+            if (dbContextDescriptor is not null)
+            {
+                services.Remove(dbContextDescriptor);
+            }
 
             services.AddDbContext<SupportChatDbContext>(options =>
-                options.UseSqlite($"Data Source={DatabasePath}"));
-
-            services.AddScoped<IChatSessionRepository, SqliteChatSessionRepository>();
+            {
+                options.UseSqlite(_connectionString);
+            });
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -38,5 +47,46 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             dbContext.Database.EnsureDeleted();
             dbContext.Database.EnsureCreated();
         });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (!disposing)
+        {
+            return;
+        }
+
+        SqliteConnection.ClearAllPools();
+        DeleteDatabaseFileWithRetry(_databasePath);
+    }
+
+    private static void DeleteDatabaseFileWithRetry(string databasePath)
+    {
+        const int maxAttempts = 5;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                if (File.Exists(databasePath))
+                {
+                    File.Delete(databasePath);
+                }
+
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Task.Delay(100).GetAwaiter().GetResult();
+                SqliteConnection.ClearAllPools();
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Task.Delay(100).GetAwaiter().GetResult();
+                SqliteConnection.ClearAllPools();
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SupportChat.API.Constants;
 
 namespace SupportChat.API.Middleware;
 
@@ -59,6 +60,13 @@ public class GlobalExceptionHandlingMiddleware
             Detail = detail,
             Instance = httpContext.Request.Path
         };
+
+        if (httpContext.Items.TryGetValue(CorrelationIdMiddleware.HttpContextItemKey, out var correlationId)
+            && correlationId is string correlationIdValue)
+        {
+            problemDetails.Extensions["correlationId"] = correlationIdValue;
+            httpContext.Response.Headers[HttpHeaderNames.CorrelationId] = correlationIdValue;
+        }
 
         await httpContext.Response.WriteAsJsonAsync(problemDetails);
     }

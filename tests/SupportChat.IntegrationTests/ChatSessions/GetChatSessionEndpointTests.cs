@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using SupportChat.API.Contracts.Sessions;
+﻿using SupportChat.API.Contracts.Sessions;
+using SupportChat.API.Constants;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -7,14 +7,12 @@ namespace SupportChat.IntegrationTests.ChatSessions;
 
 public class GetChatSessionEndpointTests
 {
-    // private WebApplicationFactory<Program> _factory = null!;
     private CustomWebApplicationFactory _factory = null!;
     private HttpClient _client = null!;
 
     [SetUp]
     public void SetUp()
     {
-        // _factory = new WebApplicationFactory<Program>();
         _factory = new CustomWebApplicationFactory();
         _client = _factory.CreateClient();
     }
@@ -60,5 +58,18 @@ public class GetChatSessionEndpointTests
         var response = await _client.GetAsync($"/api/chat-sessions/{Guid.NewGuid()}");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Should_generate_correlation_id_when_request_header_is_missing()
+    {
+        var response = await _client.GetAsync($"/api/chat-sessions/{Guid.NewGuid()}");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        Assert.That(response.Headers.Contains(HttpHeaderNames.CorrelationId), Is.True);
+
+        var correlationId = response.Headers.GetValues(HttpHeaderNames.CorrelationId).Single();
+
+        Assert.That(Guid.TryParse(correlationId, out _), Is.True);
     }
 }

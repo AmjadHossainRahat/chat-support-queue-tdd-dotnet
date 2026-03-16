@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using SupportChat.API.Contracts.Sessions;
+﻿using SupportChat.API.Contracts.Sessions;
+using SupportChat.API.Constants;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -7,14 +7,12 @@ namespace SupportChat.IntegrationTests.ChatSessions;
 
 public class CreateChatSessionEndpointTests
 {
-    // private WebApplicationFactory<Program> _factory = null!;
     private CustomWebApplicationFactory _factory = null!;
     private HttpClient _client = null!;
 
     [SetUp]
     public void SetUp()
     {
-        // _factory = new WebApplicationFactory<Program>();
         _factory = new CustomWebApplicationFactory();
         _client = _factory.CreateClient();
     }
@@ -87,5 +85,32 @@ public class CreateChatSessionEndpointTests
         Assert.That(body, Is.Not.Null);
         Assert.That(body!.AdmissionResult, Is.EqualTo("Rejected"));
         Assert.That(body.SessionId, Is.Null);
+    }
+
+    [Test]
+    public async Task Should_echo_supplied_correlation_id_in_response_header()
+    {
+        var request = new CreateChatSessionHttpRequest
+        {
+            CurrentMainQueueCount = 5,
+            CurrentOverflowQueueCount = 0,
+            NowUtc = new DateTime(2026, 3, 12, 10, 0, 0, DateTimeKind.Utc)
+        };
+
+        var message = new HttpRequestMessage(HttpMethod.Post, "/api/chat-sessions")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        var correlationId = Guid.NewGuid().ToString("D");
+        message.Headers.Add(HttpHeaderNames.CorrelationId, correlationId);
+
+        var response = await _client.SendAsync(message);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.Headers.Contains(HttpHeaderNames.CorrelationId), Is.True);
+        Assert.That(
+            response.Headers.GetValues(HttpHeaderNames.CorrelationId).Single(),
+            Is.EqualTo(correlationId));
     }
 }

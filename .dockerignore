@@ -7,8 +7,11 @@
 **/.settings
 **/.toolstarget
 **/.vs
+**/.idea/
 **/.vscode
 **/*.*proj.user
+**/*.user
+**/*.suo
 **/*.dbmdl
 **/*.jfm
 **/azds.yaml
@@ -28,3 +31,11 @@ README.md
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+**/*.db
+**/*.db-shm
+**/*.db-wal
+.git
+.gitignore
+README.md
+TestResults/
+test

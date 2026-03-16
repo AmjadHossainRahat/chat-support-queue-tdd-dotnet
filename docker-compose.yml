@@ -1,0 +1,30 @@
+services:
+  supportchat-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: supportchat-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__SupportChat: Data Source=/data/supportchat.db
+    volumes:
+      - supportchat-data:/data
+
+  supportchat-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: supportchat-worker
+    depends_on:
+      - supportchat-api
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ConnectionStrings__SupportChat: Data Source=/data/supportchat.db
+    volumes:
+      - supportchat-data:/data
+
+volumes:
+  supportchat-data:

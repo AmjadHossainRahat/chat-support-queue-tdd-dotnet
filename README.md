@@ -1,44 +1,215 @@
-# Support Chat Queue Management System
+# SupportChat
 
-This repository contains a backend system that manages support chat sessions, queueing, and agent assignment.
+SupportChat is a .NET 10 solution that simulates a support chat queue with:
+- queue admission rules
+- session polling
+- automatic assignment
+- inactive session monitoring
+- REST API
+- background workers
+- SQLite persistence
+- correlation-id based tracing capabilities
+- Docker Compose support
 
-The implementation follows a **domain-first Test Driven Development (TDD)** approach.  
-The goal of the project is to model queue capacity, agent shifts, overflow routing, inactivity detection, and seniority-based assignment in a clean and testable way.
+## Solution structure
 
-## Development Approach
+- `src/SupportChat.API` — REST API
+- `src/SupportChat.Application` — application/use case layer
+- `src/SupportChat.Domain` — domain model and rules
+- `src/SupportChat.Infrastructure` — EF Core SQLite persistence and providers
+- `src/SupportChat.Worker` — background workers
+- `tests/SupportChat.UnitTests` — unit tests
+- `tests/SupportChat.IntegrationTests` — integration tests
 
-The project follows these principles:
+## Key behaviors
 
-* Domain-first design  
-* Test Driven Development (TDD)  
-* Clear separation between API, domain logic, and background processing  
-* Incremental commits documenting architectural thinking
+- Create chat session
+- Get chat session by id
+- Register poll for session
+- Assign queued sessions in background
+- Mark inactive sessions in background after missed polls
+- Centralized exception handling
+- Correlation id propagation from API into persisted session and worker logs
 
-## Repository Structure
+## API endpoints
 
-`docs/`  
-Design analysis, assumptions, architecture notes, and API contract.
+### Create chat session
+`POST /api/chat-sessions`
 
-`docs/adr/`  
-Architecture Decision Records (ADR).
+Sample request body:
 
-`docs/diagrams`
-Different Diagrams
+```json
+{
+  "currentMainQueueCount": 5,
+  "currentOverflowQueueCount": 0,
+  "nowUtc": "2026-03-12T10:00:00Z"
+}
+```
 
-`src/`  
-Application source code (added after documentation phase).
+Sample response body:
+```json
+{
+  "admissionResult": "MainQueue",
+  "sessionId": "11111111-2222-3333-4444-555555555555"
+}
+```
 
-`tests/`  
-Unit and integration tests following the TDD approach.
+### Get chat session
+`GET /api/chat-sessions/{id}`
 
+Sample response body:
+```json
+{
+  "sessionId": "11111111-2222-3333-4444-555555555555",
+  "status": "Queued",
+  "createdAtUtc": "2026-03-12T10:00:00Z",
+  "lastPolledAtUtc": "2026-03-12T10:00:01Z",
+  "assignedAgentId": null
+}
+```
 
-## Additional Documentations
+### Register poll
+`POST /api/chat-sessions/{id}/poll`
 
-- `docs/01-task-analysis.md`
-- `docs/02-assumptions.md`
-- `docs/03-business-rules.md`
-- `docs/04-architecture.md`
-- `docs/adr/ADR-001-use-latest-dotnet-lts.md`
-- `docs/adr/ADR-002-domain-first-tdd.md`
-- `docs/adr/ADR-003-use-hosted-services-for-background-processing.md`
-- `docs/adr/ADR-004-use-polling-for-session-liveness.md`
+Sample request body:
+
+```json
+{
+  "sessionCreatedAtUtc": "2026-03-12T10:00:00Z",
+  "polledAtUtc": "2026-03-12T10:00:01Z"
+}
+```
+
+Sample response body:
+```json
+{
+  "sessionId": "11111111-2222-3333-4444-555555555555",
+  "status": "Queued",
+  "lastPolledAtUtc": "2026-03-12T10:00:01Z"
+}
+```
+
+## Correlation id
+
+The API accepts the header: `X-Correlation-Id`
+
+If not provided, the API generates one.
+
+The correlation id is:
+- added to API log scope
+- returned in response headers
+- persisted with the chat session
+- reused in worker logs so the session lifecycle can be traced across processes
+
+## Logging
+
+Structured logging is used via `ILogger`.
+
+Implemented logging areas:
+- API request start and completion
+- controller-level business actions
+- Global exception handling
+- worker start/stop/cycle activity
+- assignment and inactivity processing
+
+## Exception handling
+
+Global exception handler is implemented and returned as `application/problem+json`.
+
+Current behavior includes:
+- not found cases mapped to `404`
+- unexpected failures mapped to `500`
+
+## Async and cancellation
+
+API and worker execution paths use async/await and cancellation tokens for:
+- repository operations
+- use cases
+- processor flows
+- background service loops
+
+## Configuration
+
+Connection strings are required from configuration.
+
+Main key:
+
+```json
+{
+  "ConnectionStrings": {
+    "SupportChat": "Data Source=supportchat.db"
+  }
+}
+```
+
+The app fails fast if the connection string is missing.
+
+## Run locally
+
+### API
+```bash
+dotnet run --project src/SupportChat.API
+```
+
+### Worker
+```bash
+dotnet run --project src/SupportChat.Worker
+```
+
+## Run tests
+
+```bash
+dotnet test
+```
+
+## Docker
+
+Root-level Docker files are provided:
+- `Dockerfile.api`
+- `Dockerfile.worker`
+- `docker-compose.yml`
+
+### Build and run
+```bash
+docker compose up --build
+```
+
+### Run in background
+```bash
+docker compose up -d --build
+```
+
+### Stop
+```bash
+docker compose down
+```
+
+### Stop and remove volume
+```bash
+docker compose down -v
+```
+
+### Check running containers
+```bash
+docker compose ps
+```
+
+### View logs
+```bash
+docker compose logs supportchat-api
+docker compose logs supportchat-worker
+```
+
+## Docker notes
+
+- API and Worker run as separate containers
+- both share the same Docker volume for the SQLite database
+- for a real production system, SQLite shared across multiple containers would usually be replaced with a stronger database setup
+
+## Assumptions and trade-offs
+
+- SQLite is used for simplicity and assignment speed
+- background workers poll on a short interval
+- correlation tracking is centered on the session creation lifecycle
+- Docker Compose is used for local orchestration only
+
